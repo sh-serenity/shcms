@@ -1,3 +1,0 @@
-# shcms
-# shcms
-# shcms
