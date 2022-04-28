@@ -1,0 +1,137 @@
+
+
+<!doctype html>
+<html lang="ru-RU">
+<head>
+<meta charset="utf-8">
+<title>meathost.org</title>
+    <meta http-equiv="Content-Type" content="text/html"; charset=utf-8">
+    <link rel="stylesheet" href="/style.css">
+<style>
+.content {
+  margin: 0px auto 0;
+}
+
+h1#head {
+  font-family: 'Arial';
+  text-align: center;
+  margin: 0 0 30px;  
+  font-size: 100px;
+  line-height: 90px;
+  text-shadow: 1px 1px 1px #343434;
+  font-weight: normal;
+}
+
+#editor {
+  resize:vertical;
+  overflow:auto;
+  border:1px solid silver;
+  border-radius:5px;
+  min-height:100px; 
+  box-shadow: inset 0 0 10px silver;
+  padding:1em;
+  background: white;
+  margin: 0 auto;
+  width: 90%;
+}
+a.btn { 
+  background:rgb(15, 57, 105);
+  color: rgb(255, 251, 0);
+  border: 2px solid #343434;
+  border-radius: 4px;
+}
+
+}
+</style>  
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+
+<script>
+/**********************************
+Orinal code from this article:
+http://www.barneyparker.com/world-simplest-html5-wysisyg-inline-editor/
+
+**********************************/
+
+$(function() {
+  $('#editControls a').click(function(e) {
+    switch($(this).data('role')) {
+      case 'h1':
+      case 'h2':
+      case 'p':
+        document.execCommand('formatBlock', false, $(this).data('role'));
+        break;
+      default:
+        document.execCommand($(this).data('role'), false, null);
+        break;
+    }
+    
+  });
+});
+</script>
+<script>
+  function in(){
+    let input2 = document.getElementById("editor").value 
+    let b = document.querySelector("textarea")
+    b.innerText = input2;
+}
+
+  
+</script>
+
+</head>
+<body>
+<div class="logo" style="display: inline-block"; >
+<center><img src="top.jpg"></center>
+</div>
+<div class=menu>
+    <center><a class=sh href="/login.html">Login</a>|<a class=sh href="/new.html">Add</a>|<a class=sh href="/register.html">Register</a></center>
+</div>
+
+<div class=sh>
+
+  <form action="/addart" method="post" id="sform" name="sform">
+  <p>Name: <input type="text" name="subj" id="subj"></p>
+    
+<div class="content">
+<div id="editparent">
+<div id='editControls' style='text-align:center; padding:5px;'>
+<div><a class='btn' data-role='undo' href=
+'#'>undo</a> <a class='btn' data-role='redo' href='#'>redo</a>
+<a class='btn' data-role='bold' href=
+'#'><b>Bold</b></a> <a class='btn' data-role='italic' href=
+'#'><em>Italic</em></a> <a class='btn' data-role='underline' href=
+'#'><u><b>U</b></u></a> <a class='btn' data-role='strikeThrough'
+href='#'><strike>abc</strike></a>
+<a class='btn' data-role='justifyLeft' href=
+'#'>left</a> <a class='btn' data-role='justifyCenter' href='#'>center</a>
+<a class='btn' data-role='justifyRight' href='#'>right</a> <a class=
+'btn' data-role='justifyFull' href='#'>full</a>
+<a class='btn' data-role='indent' href=
+'#'>--></a> <a class='btn' data-role='outdent' href='#'><--</a>
+<a class='btn' data-role=
+'insertUnorderedList' href='#'>list</a> <a class='btn' data-role=
+'insertOrderedList' href='#'>numbered list</a>
+<a class='btn' data-role='h1' href=
+'#'>h<sup>1</sup></a> <a class='btn' data-role='h2' href=
+'#'>h<sup>2</sup></a> <a class='btn' data-role='p' href=
+'#'>p</a> 
+<a class='btn' data-role='subscript' href=
+'#'></a> <a class='btn' data-role='superscript' href='#'></a></div>
+<div class="example" id='editor' style='text-align:left;' contenteditable="true"></div>
+</div>
+</div>
+<script>  
+    $('form').on('submit', function() {
+	
+  	var textarea = $(this).find('textarea');
+  	var content  = $(this).find('.example').text();
+	
+  	textarea.val(content);
+	
+   });
+
+
+</script>
+<textarea style="display: none;" id="editordata" name="editordata"></textarea>
+<p><input type="submit" value="Отправить""></p>
+</div>

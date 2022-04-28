@@ -1,0 +1,37 @@
+</textarea>
+     
+<p><input type="submit" value="Отправить"></p>
+
+<script>
+$('#summernote').summernote({
+height: ($(window).height() - 300),
+callbacks: {
+onImageUpload: function(image) {
+    uploadImage(image[0]);
+}
+}
+});
+
+function uploadImage(image) {
+var data = new FormData();
+data.append("image", image);
+$.ajax({    
+url: '/image',
+cache: false,
+contentType: false,
+processData: false,
+data: data,
+type: "post",
+success: function(url) {
+    var image = $('<img>').attr('src', 'https://' + url);
+    $('#summernote').summernote("insertNode", image[0]);
+},
+error: function(data) {
+    console.log(data);
+}   
+});
+}
+</script>
+
+</p>
+

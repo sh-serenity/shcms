@@ -1,0 +1,7 @@
+{
+    "C_Cpp.intelliSenseEngineFallback": "Enabled",
+    "cmake.configureOnOpen": false,
+    "files.associations": {
+        "string.h": "c"
+    }
+}

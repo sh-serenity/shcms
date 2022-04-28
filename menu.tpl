@@ -1,0 +1,1 @@
+<div><center><a href="/art">Blog</a></center></div>

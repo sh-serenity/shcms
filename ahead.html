@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru-RU">
+<head>
+<meta charset="utf-8">
+<title>meathost.org</title>
+    <meta http-equiv="Content-Type" content="text/html"; charset=utf-8">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+</head>
+<body>
+<div class=logo><center><img src="top.jpg"></center></div>
+<script>    
+$(document).ready(function () {
+        $('#tags').added();
+        $.ajax({
+            type: 'GET',
+            url: '/tags'
+            location.reload();
+        
+        });
+    }); 
+</script>
