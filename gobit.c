@@ -5,7 +5,6 @@
 #include "sodium.h"
 #include <assert.h>
 #include <ctype.h>
-#include <curl/curl.h>
 #include <errno.h>
 #include <mysql/mysql.h>
 #include <openssl/md5.h>
@@ -28,12 +27,14 @@ typedef struct user
 {
   int uid;
   char *name;
+  
 } user;
 
 MYSQL *con;
 MYSQL *siriinit();
 FCGX_Request r;
-
+char *left;
+char *query;
 static inline int av_tolower(int c);
 char *url_decode(const char *str);
 int echofile(char *filename, FCGX_Request request);
@@ -52,9 +53,9 @@ void image(FCGX_Request r);
 void addart(FCGX_Request r);
 void more(FCGX_Request r);
 void quit(FCGX_Request r);
-void topic(FCGX_Request r);
+//void topic(FCGX_Request r);
 void addtopic(FCGX_Request r);
-void menu(FCGX_Request r);
+void newtopic(FCGX_Request r);
 
 
 #define SOCKET_PATH "0.0.0.0:9998"
@@ -63,6 +64,8 @@ static int socketId;
 int doit()
 {
   con = siriinit();
+  left = (char *)malloc(1024);
+  query = (char *)malloc(1024);
   FCGX_Request r;
   FCGX_Init();
   socketId = FCGX_OpenSocket(SOCKET_PATH, 20);
@@ -77,15 +80,15 @@ int doit()
     printf("Can not init request\n");
   }
   printf("Request is inited\n");
-
+  char *page = (char *)calloc(1024, sizeof(char));
+     
   while (FCGX_Accept_r(&r) >= 0)
   {
     //  regex_t ex;
-    regex_t exm, ex, exb, exme;
+    //regex_t exm, ex, exb, exme;
 
-    int val, valm, valb, valme;
+    //int val, valm, valb, valme;
 
-    char *page = (char *)calloc(1024, sizeof(char));
     page = FCGX_GetParam("REQUEST_URI", r.envp);
     if (strcmp(page, "/signin") == 0)
     {
@@ -96,9 +99,7 @@ int doit()
     {
       art(r);
     }
-    val = regcomp(&ex, "[:/addmsg?1-90e:]", 0);
-    int res = regexec(&ex, page, 0, NULL, 0);
-    if (!res)
+    if (strstr(page,"addmsg"))
     {
       addmsg(r);
     }
@@ -118,46 +119,50 @@ int doit()
     {
       addart(r);
     }
-    if (strcmp(page, "/topic") == 0)
-    {
-      topic(r);
-    }
+//    if (strcmp(page, "/topic") == 0)
+//    {
+//      topic(r);
+//    }
     if (strcmp(page, "/add") == 0)
     {
       add(r);
     }
-        if (strcmp(page, "/addtopic") == 0)
+    if (strcmp(page, "/addtopic") == 0)
     {
       addtopic(r);
     }
-
     if (strstr(page,"fbclid")) {
       art(r);
     }
+    if (strcmp(page, "/newtopic") == 0)
+    {
+      newtopic(r);
+    }
+     if (strstr(page, "more"))
+    {  
+      more(r);
+    } 
 
-    valme = regcomp(&exme, "[:/menu?1-90e:]", 0);
+  /*  valme = regcomp(&exme, "[:/menu?1-90e:]", 0);
     int resme = regexec(&exme, page, 0, NULL, 0);
     if (!resme)
     {
       menu(r);
-    }
+    } */
 
-    valb = regcomp(&exb, "[:/bin?1-90e:]", 0);
-    int resb = regexec(&exb, page, 0, NULL, 0);
-    if (!resb)
+  //  valb = regcomp(&exb, "[:/bin?1-90e:]", 0)
+    
+    if (strstr(page,"bin"))
     {
       bin(r);
     }
 
-    valm = regcomp(&exm, "[:/more?1-90e:]", 0);
-    int resm = regexec(&exm, page, 0, NULL, 0);
-    if (!resm)
-    {
-      more(r);
-    }
+   
     FCGX_Finish_r(&r);
   }
-
+  free(left);
+  free(query);
+  free(page);
   mysql_close(con);
 }
 
@@ -528,8 +533,7 @@ int reg(FCGX_Request r)
                 r.out);
       return 0;
     }
-    val = regcomp(&ex, "[A-Za-z0-9;()-_;:.@]", 0);
-    char *query = malloc(300);
+    val = regcomp(&ex, "[A-Za-z0-9;()-_;:.@А-Яа-я]", 0);
     sprintf(query, "select * from users where name='%s'", pogin);
     // FCGX_PutS(query,r.out);
     int res;
@@ -587,10 +591,9 @@ int reg(FCGX_Request r)
         mysql_query(con, query);
         FCGX_PutS(mysql_error(con), r.out);
         FCGX_PutS("User added. Login <a "
-                  "href=\"http://meathost.org/"
-                  "login.html\">meathost.org\"</a>",
+                  "href=\"http://dev.shushik.kiev.ua/"
+                  "login.html\">dev.shushik.kiev.ua\"</a>",
                   r.out);
-        free(query);
         free(pogin);
         free(email);
         free(pass);
@@ -605,7 +608,6 @@ int reg(FCGX_Request r)
                   "href=\"http://serenity-net.org/regform\">Registration</a> "
                   "and try again.",
                   r.out);
-        free(query);
         free(pogin);
         free(email);
         free(pass);
@@ -618,7 +620,6 @@ int reg(FCGX_Request r)
     {
       //	    send_headers(r);
       FCGX_PutS("This name is taken", r.out);
-      free(query);
       free(pogin);
       free(email);
       free(pass);
@@ -632,7 +633,6 @@ int reg(FCGX_Request r)
 
 int signin(FCGX_Request r)
 {
-  char *query = malloc(200);
   // char met[5];
 
   if (!strcmp(FCGX_GetParam("REQUEST_METHOD", r.envp), "POST"))
@@ -684,16 +684,16 @@ int signin(FCGX_Request r)
       }
       //  FCGX_PutS("Location: http:/seti/art/",r.out);
       FCGX_PutS(" SameSite=Strict", r.out);
-      FCGX_PutS("Location: http://meathost.org/art", r.out);
+      FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
       FCGX_PutS("\r\n", r.out);
       FCGX_PutS("\r\n", r.out);
-      //    FCGX_PutS("Location: http://meathost.org/art",r.out);
+      //    FCGX_PutS("Location: http://dev.shushik.kiev.ua/art",r.out);
       //         FCGX_PutS("<head><meta http-equiv=\"refresh\"
-      //         content=\"0;URL=\http://meathost.org/art\"/></head>
+      //         content=\"0;URL=\http://dev.shushik.kiev.ua/art\"/></head>
       //         ",r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://meathost.org/art\";</script>",
+                "\"http://dev.shushik.kiev.ua/art\";</script>",
                 r.out);
     } // else {
       //  FCGX_PutS("Content-type: text/html\r\n", r.out);
@@ -703,6 +703,11 @@ int signin(FCGX_Request r)
 
     // FCGX_PutS("Theris not such user.", r.out);
     //  }
+  free(len);
+  free(bufp);
+  free(pogin);
+  free(pass);
+  mysql_free_result(confres);  
   }
 }
 
@@ -719,7 +724,9 @@ void send_headers(FCGX_Request r)
         "Content-type: text/html\r\n Set-Cookie: %s; SameSite=Strict\r\n\r\n",
         cookie);
     FCGX_PutS(str, r.out);
+    free(str);
   }
+  free(cookie);
 }
 
 int getsuid(FCGX_Request r)
@@ -771,8 +778,8 @@ int getsuid(FCGX_Request r)
   // FCGX_PutS("\r\n", r.out);
   //  FCGX_PutS("No cookies.", r.out);
   //  }
-  //  free(cookie);
-  //  free(kilo);
+    free(cookie);
+    free(kilo);
 }
 
 user getuser(FCGX_Request r)
@@ -835,6 +842,8 @@ user getuser(FCGX_Request r)
     luser.name = "anonimus";
     return luser;
   }
+  free(kilo);
+  free(cookie);
 }
 
 user header(FCGX_Request r)
@@ -847,13 +856,12 @@ user header(FCGX_Request r)
   echofile("header.tpl", r);
   if (luser.uid)
   {
-    char *left = malloc(256);
-    sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><center><a class=sh href=\"/add\">Add</a></div>", luser.name);
+    sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><a class=sh href=\"/add\">Add</a></div>", luser.name);
     FCGX_PutS(left, r.out);
   }
   else
     echofile("nologinmenu.tpl", r);
-
+ 
   return luser;
 }
 
@@ -872,9 +880,10 @@ void quit(FCGX_Request r)
   }
   FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
             "window.location.href = "
-            "\"http://meathost.org/art\";</script>",
+            "\"http://dev.shushik.kiev.ua/art\";</script>",
             r.out);
 }
+
 
 void addtopic(FCGX_Request r)
 {
@@ -890,7 +899,6 @@ void addtopic(FCGX_Request r)
       int ilen = atoi(len);
       if ((ilen > 0) && (ilen < 140))
       {
-        char *query = malloc(ilen + 40);
         char *rawbufp = malloc(ilen);
       //  FCGX_GetStr(rawbufp, ilen, r.in);
         int i = 0;
@@ -910,20 +918,20 @@ void addtopic(FCGX_Request r)
 
         regex_t ex;
         int val;
-        val = regcomp(&ex, "[A-Za-z0-9;()-_;:.@A-Яа-я]", 0);
+//        val = regcomp(&ex, "[A-Za-z0-9;()-_;:.@А-Яа-я]", 0);
         char* newtopic = parse_post(bufp, "name=", 128);
         char *parent = (char*)malloc(16);
        // if(strstr(bufp,"parent="))
-          parent = parse_post(bufp,"shit=",16);
+          parent = parse_post(bufp,"topic=",16);
     //    else 
     ///       parent="0";  
         if(!isNumber(parent)) parent = 0;  
         int ntlen = strlen(newtopic);
         if (ntlen > 0)
         {
-          int res = regexec(&ex, newtopic, 0, NULL, 0);
+  //        int res = regexec(&ex, newtopic, 0, NULL, 0);
           int ntlen = strlen(newtopic);
-          if (!res)
+    //      if (!res)
           {
             char *end = malloc(ntlen * 2 + 1);
             mysql_real_escape_string(con, end, newtopic, ntlen);
@@ -935,19 +943,24 @@ void addtopic(FCGX_Request r)
             fputs(mysql_error(con), fe);
             fclose(fe);
             FCGX_PutS("Added.", r.out);
+            free(end);
         }
-        else
-          FCGX_PutS("Only letter and numbers allowed.", r.out);
+      // else
+      //    FCGX_PutS("Only letter and numbers allowed.", r.out);
         }
+        free(parent);
+        free(newtopic);
+        free(bufp);
       }
       else
         FCGX_PutS("Too long name.", r.out);
-    }
+//        free(len);
+  } }
     else
       FCGX_PutS("Forbidden.", r.out);
-  }
+//  free(m);
 }
-
+/*
 void topic(FCGX_Request r)
 {
 
@@ -986,7 +999,7 @@ void topic(FCGX_Request r)
           regex_t ex;
           int val;
           val = regcomp(&ex, "[A-Za-z0-9;()-_;:.@A-Яа-я]", 0);
-          char *newtopic = parse_post(bufp, "newtopic=", 128);
+          char *newtopic = parse_post(bufp, "topic=", 128);
           int ntlen = strlen(newtopic);
           if (ntlen > 0)
           {
@@ -1064,10 +1077,10 @@ void topic(FCGX_Request r)
   //   sprintf("<p>%d</>",topic);
   //    fclose(fe);
   // }
-
+/*
   echofile("footer.tpl", r);
 }
-
+*/
 //#define HUGEQUERY(id) sprintf(query1,"WITH RECURSIVE msg_path (id,date, data, parent, lvl, path, name, subj) AS ( SELECT id, date, SUBSTRING(data,1,600), parent, 0 lvl, data as path, (select name from users where users.id = msg.owner),subj FROM msg WHERE id = '%s'  UNION ALL SELECT msg.id, msg.date, SUBSTRING(msg.data,1,600), msg.parent, msgp.lvl + 1, concat(msgp.path, \">\", msg.data),(select users.name from users where users.id = msg.owner), msg.subj FROM msg_path AS msgp  JOIN msg AS msg ON msgp.id = msg.parent ) SELECT * FROM msg_path order by path desc, date asc",cid);
 
 void one(long int id, int cutflag, FCGX_Request r)
@@ -1076,10 +1089,8 @@ void one(long int id, int cutflag, FCGX_Request r)
   FCGX_PutS(mysql_error(con), r.out);
   MYSQL_RES *confres2 = mysql_store_result(con);
   char *cut = malloc(600);
-  char *more = malloc(64);
-  char *query1 = malloc(510);
-  char *left = (char *)malloc(500);
-  char *cid = (char *)malloc(16);
+  //char *more = malloc(64);
+  //char *cid = (char *)malloc(16);
   //  sprinf(cid,"%d",id);
   if (confres2)
   {
@@ -1093,7 +1104,7 @@ void one(long int id, int cutflag, FCGX_Request r)
     if (cutflag)
       // query1 = HUGEQUERY(cid);
       sprintf(
-          query1,
+          query,
           "WITH RECURSIVE msg_path (id,date, data, parent, lvl, path, name, subj) AS "
           "( SELECT id, date, SUBSTRING(data,1,600), parent, 0 lvl, data as path, (select name "
           "from users"
@@ -1106,7 +1117,7 @@ void one(long int id, int cutflag, FCGX_Request r)
 
     else
       sprintf(
-          query1,
+          query,
           "WITH RECURSIVE msg_path (id,date, data, parent, lvl, path, name, subj) AS "
           "( SELECT id, date, data, parent, 0 lvl, data as path, (select name "
           "from users"
@@ -1122,7 +1133,7 @@ void one(long int id, int cutflag, FCGX_Request r)
     // sprintf(left,"%d",strlen(query1));
     // FCGX_PutS(left, r.out);
 
-    mysql_real_query(con, query1, strlen(query1));
+    mysql_real_query(con, query, strlen(query));
     FCGX_PutS(mysql_error(con), r.out);
     int totalrows1 = 0;
     MYSQL_RES *confres1 = mysql_store_result(con);
@@ -1137,10 +1148,10 @@ void one(long int id, int cutflag, FCGX_Request r)
         {
 
           int lvl = atoi(row1[4]);
-          int n = 3 * lvl;
-          int m = 720 - (20 * lvl);
+          int n = 30 + 5 * lvl;
+          int m = 70  ;
           FCGX_PutS("<div class=sh>", r.out);
-          sprintf(left, "<div class=com style=\"left: %d\%; width: %dpx;\">",
+          sprintf(left, "<div class=com style=\"left: %d\%; width: %d\%;\">",
                   n - 3, m);
           FCGX_PutS(left, r.out);
           if (row1[7])
@@ -1152,7 +1163,7 @@ void one(long int id, int cutflag, FCGX_Request r)
           FCGX_PutS(row1[2], r.out);
           if (cutflag)
           {
-            sprintf(left, "<p><a href=\"https://meathost.org/more?%s\">more...</a></p>", row1[0]);
+            sprintf(left, "<p><a href=\"https://dev.shushik.kiev.ua/more?%s\">more...</a></p>", row1[0]);
             FCGX_PutS(left, r.out);
           }
           sprintf(left,
@@ -1177,10 +1188,8 @@ void one(long int id, int cutflag, FCGX_Request r)
     //mysql_free_result(confres1);
   }
   //mysql_free_result(confres2);
-  free(query1);
   free(cut);
-  free(left);
-  free(more);
+//  free(more);
 }
 
 void art(FCGX_Request r)
@@ -1200,7 +1209,6 @@ void art(FCGX_Request r)
       long int id = atoi(row[0]);
       one(id, 1, r);
     }
-  echofile("footer.tpl", r);
 }
 
 void more(FCGX_Request r)
@@ -1223,10 +1231,11 @@ void more(FCGX_Request r)
 
     echofile("footer.tpl", r);
   }
+  free(nu);
 }
 
 //}
-
+/*
 char *leprozory(const char *input)
 {
   TidyBuffer output = {0};
@@ -1269,11 +1278,11 @@ char *leprozory(const char *input)
 
       printf( "\nAnd here is the result:\n\n%s", output); */
 
-  return cleansed_buffer_;
+/*  return cleansed_buffer_;
   tidyBufFree(&errbuf);
   tidyRelease(tdoc);
 }
-
+*/
 void addmsg(FCGX_Request r)
 {
   //  send_headers(r);
@@ -1283,12 +1292,12 @@ void addmsg(FCGX_Request r)
   if (n)
   {
     //  echofile("header.tpl", r);
-    int uid = getsuid(r);
-    if (uid)
+    user luser = getuser(r);
+    if (luser.uid)
     {
 
-      char *eight = (char *)malloc(8);
-      sprintf(eight, "%d", uid);
+      //char *eight = (char *)malloc(8);
+      //sprintf(eight, "%d", luser.uid);
       char *m = malloc(5);
       m = FCGX_GetParam("REQUEST_METHOD", r.envp);
       //      FCGX_PutS(method,r.out);
@@ -1309,27 +1318,29 @@ void addmsg(FCGX_Request r)
 
           char *e = strchr(nu, 0);
           char *parent = malloc(8);
-          e = strchr(nu, 0);
           int plen = e - (nu + 8);
           memcpy(parent, nu + 8, plen);
           parent[plen] = 0;
 
           char *s2 = parse_post(bufp, "test1=", 0);
       //   char *s3 = leprozory(s2);
-          int query_size =
+      /*    int query_size =
               strlen(s2) +
               strlen("INSERT INTO msg (owner, data, parent) VALUES "
                      "('%s', '%s', '%d')") +
-              1024;
-          char *query = malloc(query_size);
+              1024; */
+          long int size = ilen * 2 + 1;
+          char *end = malloc(size);
+          mysql_real_escape_string(con, end, s2, strlen(s2));
+          char *querybig = malloc(size);
           sprintf(
-              query,
+              querybig,
               "INSERT INTO msg (owner, data, parent) VALUES ('%u', '%s', '%s')",
-              uid, s2, parent);
+              luser.uid, s2, parent);
           FCGX_PutS("Content-type: text/html\r\n\r\n", r.out);
           FILE *fe = fopen("err", "a");
           fputs(bufp, fe);
-          mysql_query(con, query);
+          mysql_query(con, querybig);
           FCGX_PutS(mysql_error(con), r.out);
           fputs(mysql_error(con), fe);
           fclose(fe);
@@ -1338,19 +1349,26 @@ void addmsg(FCGX_Request r)
           //  free(parent);
 //          free(s3);
           free(s2);
-          free(query);
+          free(querybig);
           free(bufp);
+        //  free(eight);
+          free(m);
+          free(parent);
+          free(len);
+          free(end);
         } // there in post zero.
-        FCGX_PutS("Location: http://meathost.org/art", r.out);
+        FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
         FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                   "window.location.href = "
-                  "\"http://meathost.org/art\";</script>",
+                  "\"http://dev.shushik.kiev.ua/art\";</script>",
                   r.out);
       }
     }
     else
       FCGX_PutS("You are not registerd", r.out);
   }
+  free(n);
+  free(nu);
 }
 
 void addart(FCGX_Request r)
@@ -1358,12 +1376,12 @@ void addart(FCGX_Request r)
   //  send_headers(r);
   char *nu = (char *)malloc(32);
   //  echofile("header.tpl", r);
-  int uid = getsuid(r);
-  if (uid)
+  user luser = getuser(r);
+  if (luser.uid)
   {
 
-    char *eight = (char *)malloc(8);
-    sprintf(eight, "%d", uid);
+  //  char *eight = (char *)malloc(8);
+  //  sprintf(eight, "%d", uid);
     char *m = malloc(5);
     m = FCGX_GetParam("REQUEST_METHOD", r.envp);
     //      FCGX_PutS(method,r.out);
@@ -1380,6 +1398,8 @@ void addart(FCGX_Request r)
         char *bufp = url_decode(rawbufp);
         bufp[ilen] = 0;
 
+        free(rawbufp);
+
         char *s4 = parse_post(bufp, "subj=", 0);
     //    char *s5 = leprozory(s4);
         char *s2 = parse_post(bufp, "editordata=", 0);
@@ -1392,20 +1412,20 @@ void addart(FCGX_Request r)
         char* topic = parse_post(bufp,"topic=",16);
         if(!isNumber(topic)) topic=0;
         long int size = ilen * 2 + 1;
-        char *query = malloc(size);
+        char *querybig = malloc(size);
         char *end = malloc(size);
         mysql_real_escape_string(con, end, s2, strlen(s2));
         char *endsubj = malloc(strlen(s4) * 2 + 1);
         mysql_real_escape_string(con, endsubj, s4, strlen(s4));
 
-        sprintf(query,
-                "INSERT INTO msg (owner, data, parent, subj, topic) VALUES ('%s', "
+        sprintf(querybig,
+                "INSERT INTO msg (owner, data, parent, subj, topic) VALUES ('%d', "
                 "'%s', '%d', '%s', '%s');",
-                eight, end, 0, endsubj, topic);
+                luser.uid, end, 0, endsubj, topic);
         FCGX_PutS("Content-type: text/html\r\n\r\n", r.out);
         FILE *fe = fopen("err", "a");
-        fputs(query, fe);
-        mysql_query(con, query);
+        fputs(querybig, fe);
+        mysql_query(con, querybig);
         FCGX_PutS(mysql_error(con), r.out);
         fputs(mysql_error(con), fe);
         fclose(fe);
@@ -1416,18 +1436,26 @@ void addart(FCGX_Request r)
     //    free(s3);
     //    free(s5);
         //  free(s5);
-        free(query);
+        free(querybig);
         free(bufp);
+        free(end);
+        free(endsubj);
+        free(topic);
+
       } // there in post zero.
-      FCGX_PutS("Location: http://meathost.org/art", r.out);
+      FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://meathost.org/art\";</script>",
+                "\"http://dev.shushik.kiev.ua/art\";</script>",
                 r.out);
+
+      free(len);
     }
+    free(m);
   }
   else
     FCGX_PutS("You are not registerd", r.out);
+    free(nu);
 }
 
 #define MAXLINE 38400
@@ -1461,8 +1489,8 @@ void image(FCGX_Request r)
   // FCGX_PutS("Accept-Post: */*\r\n",r.out);
   // FCGX_PutS("\r\n\r\n",r.out);
 
-  int uid = getsuid(r);
-  if (uid)
+  user luser = getuser(r);
+  if (luser.uid)
     if (!strcmp(FCGX_GetParam("REQUEST_METHOD", r.envp), "POST"))
     {
       char *bufp = malloc(4096);
@@ -1608,7 +1636,7 @@ void image(FCGX_Request r)
       //   FCGX_PutS(len,r.out);
       char *st = malloc(100);
       //  FCGX_PutS("Content-type: text/html\r\n\r\n",r.out);
-      sprintf(st, "meathost.org/%s\r\n", fname);
+      sprintf(st, "dev.shushik.kiev.ua/%s\r\n", fname);
       printf(st);
       FCGX_PutS(st, r.out);
       //  FCGX_PutS(filename,r.out);
@@ -1625,12 +1653,16 @@ void image(FCGX_Request r)
       // 235103533627700036105989979\r\nContent-Disposition: form-data;
       // name=\"image\"; filename=\"Iam.jpg\"\r\nContent-Type:
       // image/jpeg\r\n\r\n\377\330\377", <incomplete sequence \340>
+      free(bnum);
+      free(filename);
+      free(contype);
+      free(bufp);
+      free(buf);
     }
 }
 
 void add(FCGX_Request r)
 {
-  char *left = malloc(300);
   FCGX_PutS("\r\n", r.out);
   FCGX_PutS("\r\n", r.out);
   user luser = getuser(r);
@@ -1642,101 +1674,126 @@ void add(FCGX_Request r)
       {  
         sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><center><a class=sh href=\"/add\">Add</a></div>", luser.name);
         FCGX_PutS(left, r.out);
+      
+        echofile("new.html", r); 
+
+          //char *query = (char * )malloc(256);
+
+
+          FCGX_PutS("<li><input type=\"radio\" id=\"topic0\" name=\"topic\" value=\"0\" checked=\"checked\"><label for=\"topic0\">0</label></li>",r.out);
+         
+          sprintf(
+          query,
+          "WITH RECURSIVE topic_path (id,name, parent, lvl, path) AS (SELECT id, name, parent, 0 lvl ,  name as path FROM topic  where parent = 0 UNION ALL SELECT topic.id, topic.name, topic.parent, topicp.lvl + 1, concat(topicp.path, \">\", topic.name) FROM topic_path AS topicp JOIN topic AS topic ON topicp.id = topic.parent) SELECT * FROM topic_path order by path asc; ");  
+          
+          mysql_query(con,query);
+          FCGX_PutS(mysql_error(con), r.out);
+
+          MYSQL_RES *confres4 = mysql_store_result(con);  
+          MYSQL_ROW row;
+
+          int lvl = 0;
+          int lvlup = 0;
+          while(row = mysql_fetch_row(confres4)) {
+            lvl = atoi(row[3]);
+            if (lvlup < lvl) {
+              while(lvlup != lvl) {
+                FCGX_PutS("<ul>",r.out);
+                lvlup++;
+              }
+            }
+            if ((lvlup >  lvl)) { 
+              FCGX_PutS("</ul>",r.out);
+              while(lvlup != lvl) {
+                FCGX_PutS("</ul>",r.out);
+                lvlup--;
+              }      
+            }
+          
+            sprintf(left,"<li><input type=\"radio\" id=\"topic%s\" name=\"topic\" value=\"%s\"><label for=\"topic%s\">%s</lable></li>",row[0],row[0],row[0],row[1]);
+            FCGX_PutS(left,r.out);
+            }
+
+            FCGX_PutS("<p><input type=\"submit\" value=\"Отправить\"></p>",r.out);
+      
+        FCGX_PutS("</form></div>", r.out);
       }
-      else
-        echofile("nologinmenu.tpl", r);
-    mysql_query(con, "SELECT id, name from topic");
-    echofile("new.html", r); 
-    MYSQL_RES *confres = mysql_store_result(con);
-    MYSQL_ROW row;
-           FCGX_PutS("<br><input type=\"radio\" value=\"0\" name=\"topic\" checked=\"checked\"> No topic <br>",r.out); 
-           if (confres)
-            while (row = mysql_fetch_row(confres))
-            { 
-              sprintf(left, "<input type=\"radio\" value=\"%s\"name=\"topic\"'>  %s<br>",row[0], row[1]);
-              FCGX_PutS(left, r.out);
-            } 
-
-  
-    FCGX_PutS("<p><input type=\"submit\" value=\"Отправить\"></p>",r.out);
-  
+      echofile("footer.tpl",r);
+  }
+      
+    
 
 
-    sprintf(left,"New (you be able to choose it after uou click the button):<br> <form action=\"#\" method=\"POST\"><input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: { name:name }, dataType: \"json\", success: function(result){}});});});</script>");
-    FCGX_PutS(left,r.out);    
-    FCGX_PutS("</div>",r.out); 
 
-    FCGX_PutS("</form></div>", r.out);
-  echofile("footer.tpl", r);
-}
-
-void menu(FCGX_Request r)
+void newtopic(FCGX_Request r)
 {
-
+/*
  char *nu = (char *)malloc(32);
   nu = FCGX_GetParam("REQUEST_URI", r.envp);
 
-  if (strstr(nu, "menu"))
-  {
+  if (strstr(nu, "newtopic"))
+  {  */
+  FCGX_PutS("\r\n", r.out);
+  FCGX_PutS("\r\n", r.out);
     user luser= header(r);
     if(luser.uid)
     { 
     MYSQL_ROW row;
-    MYSQL_ROW row1;
+    //MYSQL_ROW row1;
          
-    char *e = strchr(nu, 0);
+/*    char *e = strchr(nu, 0);
     char *mid = malloc(16);
     e = strchr(nu, 0);
     int plen = e - (nu + 5);
-        memcpy(mid, nu + 5, plen); // char *str = (char *)malloc(110)
-          char *query = (char * )malloc(256);
-          char *left  = (char * )malloc(256);
-          mid[plen] = 0;
+            memcpy(mid, nu + 5, plen); // char *str = (char *)malloc(110) */
+        
+        
+//          mid[plen] = 0;
 
-          char *query1 = malloc(500);   
+          char *query = malloc(500);   
           FCGX_PutS("<div class=sh>",r.out);
           sprintf(
-          query1,
+          query,
           "WITH RECURSIVE topic_path (id,name, parent, lvl, path) AS (SELECT id, name, parent, 0 lvl ,  name as path FROM topic  where parent = 0 UNION ALL SELECT topic.id, topic.name, topic.parent, topicp.lvl + 1, concat(topicp.path, \">\", topic.name) FROM topic_path AS topicp JOIN topic AS topic ON topicp.id = topic.parent) SELECT * FROM topic_path order by path asc; ");  
-          mysql_query(con,query1);
+          
+          
+          
+          mysql_query(con,query);
           FCGX_PutS(mysql_error(con), r.out);
           MYSQL_RES *confres4 = mysql_store_result(con);  
           int lvl = 0;
-          int lvlup;
-//<input type=\"radio\" id=\"shit%s\" name=\"shit\" value=\"%s\"><label for=\"shit%s\">%s</label>
+          int lvlup = 0;
+//<input type=\"radio\" id=\"topic%s\" name=\"topic\" value=\"%s\"><label for=\"topic%s\">%s</label>
           FCGX_PutS("<ul><form action=\"#\" method=\"POST\">",r.out);
-          FCGX_PutS("<li><input type=\"radio\" id=\"shit0\" name=\"shit\" value=\"shit0\" checked=\"checked\"><label for=\"shit0\">0</label></li>",r.out);
+          FCGX_PutS("<li><input type=\"radio\" id=\"topic0\" name=\"topic\" value=\"0\" checked=\"checked\"><label for=\"topic0\">0</label></li>",r.out);
           int ln = 0;
           int lo = 0;
           while(row = mysql_fetch_row(confres4)) {
-             if ((lvlup == lvl) & (ln == 1) & (lo == 0))
-            {
+            lvl = atoi(row[3]);
+            if (lvlup < lvl) {
+              while(lvlup != lvl) {
+                FCGX_PutS("<ul>",r.out);
+                lvlup++;
+              }
+            }
+            if ((lvlup >  lvl)) { 
               FCGX_PutS("</ul>",r.out);
-              ln = 0;
-              lo = 1;
+              while(lvlup != lvl) {
+                FCGX_PutS("</ul>",r.out);
+                lvlup--;
+              }      
             }
-            lvlup = atoi(row[3]);
-            if (lvlup > lvl) {
-              FCGX_PutS("<ul>",r.out);
-              lvl = lvlup;
-              ln = 1;
-              lo = 0; 
-            }
-            sprintf(left,"<li><input type=\"radio\" id=\"shit%s\" name=\"shit\" value=\"%s\"><label for=\"shit%s\">%s</lable></li>",row[0],row[0],row[0],row[1]);
+          
+         
+            sprintf(left,"<li><input type=\"radio\" id=\"topic%s\" name=\"topic\" value=\"%s\"><label for=\"topic%s\">%s</lable></li>",row[0],row[0],row[0],row[1]);
             FCGX_PutS(left,r.out);
-            if ((lvlup < lvl) & (lo == 0) ){ 
-              FCGX_PutS("</ul>",r.out);
-              lo = 1;
-              lvl = lvlup;
-            }
-            
-            
-            
-          }
-          sprintf(left,"New:<br> <form action=\"#\" method=\"POST\"><input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var shit = $('#shit').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: $(\"form\").serialize(), dataType: \"json\", success: function(result){}});}); if (window.localStorage)  if (!localStorage.getItem('reload')) { localStorage['reload'] = true; window.location.reload(); } else {localStorage.removeItem('reload');}   });</script>");
+          }  
+
+      //    sprintf(left,"New:<br><input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var topic = $('#topic').val(); $.ajax({ type:\"POST\", url: \"http://185.151.245.8/addtopic\", data: $(\"form\").serialize(), dataType: \"json\", success: function(result){}});}); });  if (window.localStorage)  if (!localStorage.getItem('reload')) { localStorage['reload'] = true; window.location.reload(); } else {localStorage.removeItem('reload');}   </script>");
+          sprintf(left,"New:<br> <form action=\"#\" method=\"POST\"><input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var shit = $('#topic').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: $(\"form\").serialize(), dataType: \"json\", success: function(result){}}); reloadPage();   }); });</script>");
     
-    //        FCGX_PutS("Create new, as a child of selcted:<br> <input type=\"text\" name=\"name\" id=\"name\"><input type=\"submit\" value=\"Ok\"><script> $('form').on('submit', function(){event.preventDefault(); var	name = $('#name').val(); var shit = $('#shit').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: { name:name, shit:shit }, dataType: \"json\", success: function(result){}})location.reload(); });});});</script>",r.out);    
-        //  sprintf(left,"<p>Create new, as a child of selcted:<br>  <input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var shit =  $('#shit').val(); $.ajax({ type:\"POST\", url: \"/addtopic\",  data: $(\"form\").serialize(); cache: false, success: function(result){}})location.reload(); });});</script></p>");
+          //  FCGX_PutS("Create new, as a child of selcted:<br> <input type=\"text\" name=\"name\" id=\"name\"><input type=\"submit\" value=\"Ok\"><script> $('form').on('submit', function(){event.preventDefault(); var	name = $('#name').val(); var topic = $('#topic').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: { name:name, topic:topic }, dataType: \"json\", success: function(result){}})location.reload(); });});});</script>",r.out);    
+      //  sprintf(left,"<p>Create new, as a child of selcted:<br>  <input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var topic =  $('#topic').val(); $.ajax({ type:\"POST\", url: \"/addtopic\",  data: $(\"form\").serialize(), dataType: \"json\", success: function(result){}})location.reload(); });});</script></p>");
           FCGX_PutS(left,r.out);
           FCGX_PutS("</form></ul>",r.out);
           
@@ -1747,16 +1804,16 @@ void menu(FCGX_Request r)
           if (confres)
           while (row1 = mysql_fetch_row(confres))
             { 
-              sprintf(left, "<input type=\"radio\" value=\"%s\" id=\"shit\" name=\"shit\">  %s<br>",row1[0], row1[1]);
+              sprintf(left, "<input type=\"radio\" value=\"%s\" id=\"topic\" name=\"topic\">  %s<br>",row1[0], row1[1]);
               FCGX_PutS(left, r.out);
             }
 
-            sprintf(query1,"<li><input type=\"radio\" id=\"shit%s\" name=\"shit\" value=\"%s\"><label for=\"shit%s\">%s</label></li>",row[0],row[0],row[0], row[1]);
+            sprintf(query1,"<li><input type=\"radio\" id=\"topic%s\" name=\"topic\" value=\"%s\"><label for=\"topic%s\">%s</label></li>",row[0],row[0],row[0], row[1]);
             
-   /*         sprintf(left,"Create new, as a child of selcted:<br> <input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var shit = $('#shit').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: { name:name, shit:shit }, dataType: \"json\", success: function(result){}})location.reload(); });});</script>");
+   /*         sprintf(left,"Create new, as a child of selcted:<br> <input type=\"text\" name=\"name\" id=\"name\"><button type=\"submit\">Ok</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var topic = $('#topic').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: { name:name, topic:topic }, dataType: \"json\", success: function(result){}})location.reload(); });});</script>");
           FCGX_PutS(left,r.out);
           FCGX_PutS("</form></div>",r.out); */
-          FCGX_PutS("<div class=left>",r.out); 
+  /*        FCGX_PutS("<div class=left>",r.out); 
           
           
           
@@ -1765,17 +1822,17 @@ void menu(FCGX_Request r)
           
           while (row = mysql_fetch_row(confres1))
           {
-              sprintf(left, "<a href=\"https://meathost.org/menu%s\">%s</a> <br>",row[0],row[1]);
+              sprintf(left, "<a href=\"https://dev.shushik.kiev.ua/menu%s\">%s</a> <br>",row[0],row[1]);
               FCGX_PutS(left,r.out);
           }
           FCGX_PutS(mysql_error(con), r.out);
-          FCGX_PutS("</div>",r.out);
+          FCGX_PutS("</div>",r.out); */
         
     //      sprintf(query, "select subj,data,topic from msg left join topic on topic.id = msg.topic where msg.id ='%s'", mid);
         /*  if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"https://meathost.org/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"https://dev.shushik.kiev.ua/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           */  
@@ -1799,16 +1856,19 @@ void menu(FCGX_Request r)
               sprintf(left, "<input type=\"radio\" value=\"%s\"name=\"topic\"'>  %s<br>",row1[0], row1[1]);
               FCGX_PutS(left, r.out);
             }
-            FCGX_PutS("<p><button type=\"submit\">Send it there</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var	shit = $('#shit').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: { name:name, shit:shit }, dataType: \"json\", success: function(result){}});});});</script></p>", r.out);  
+            FCGX_PutS("<p><button type=\"submit\">Send it there</button></form><script>$(document).ready(function(){$('button').click(function(event){event.preventDefault();var	name = $('#name').val(); var	topic = $('#topic').val(); $.ajax({ type:\"POST\", url: \"/addtopic\", data: { name:name, topic:topic }, dataType: \"json\", success: function(result){}});});});</script></p>", r.out);  
 
           //FCGX_PutS(left, r.out);
           // Here is data going */
+     //     free(query);
+     //    free(left);
       }
     
-   }
+  
+
   echofile("footer.tpl",r);
- 
-}
+ }
+//}
 
 void bin(FCGX_Request r)
 {
@@ -1864,7 +1924,7 @@ void bin(FCGX_Request r)
           if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"https://meathost.org/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"https://dev.shushik.kiev.ua/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           mysql_query(con, query);

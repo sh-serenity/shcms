@@ -1,6 +1,6 @@
 body	{
     color: #000000;
-    background-color: #c28e02;
+    background-color: #ffffff;
     margin: 0px;
     padding: 0px;
     font-family: 'Open Sans Condensed', sans-serif;
@@ -11,30 +11,23 @@ a	{
 }
 
 div.sh	{
-    background-color: #ffe093;
-    width: 854px;
+    background-color: #ffffff;
+    left: 30%;
     margin: 0px;
     margin-left: auto;
     margin-right: auto;
-    padding: 8px 32px 8px 32px;
-    border: 1px solid #004400;
-    border-radius: 6px;
-}
+    text-align: left;
+    padding: 8px 32px 8px 32px; 
+} 
 
 div.menu	{
     background-color: #f49e69;
-    width: 854px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 8px 32px 8px 32px;
-    align: center;
-    border: 1px solid #004400;
-    border-radius: 6px;
-
+    text-align: left;
 }
+
 div.hello	{
     background-color: green;
-    width: 854px;
+    width: 70%;
     margin: 0px;
     margin-left: auto;
     margin-right: auto;
@@ -49,21 +42,16 @@ div.hello	{
     margin: 0px;
     margin-left: auto;
     margin-right: auto;
-    padding: 0px 0px 0px 0px;
-    border: 1px solid #004400;
-    border-radius: 6px;
-    width: 920px;
-    
+    color: whitesmoke;
+    background: #4d3700;
 }
 
 .right {
     overflow: hidden; 
     top: 0px;
     width: max-content;;   
-    max-width: 70ex;
+    max-width: 30%;
     background-color: #6d9720; 
-    border: 1px solid #004400;
-    border-radius: 6px;
     float: right;    
     
 }
@@ -107,18 +95,18 @@ a.sh {
     background: #fc3;
 }
 .com {
-    background-color: #d5eea6;
-    position: relative;
-    width: 920px;
-    fon-size: 14px;
+    background-color: #948f8f;
+    right: 30%;
+    width: 70%;
+    font-size: 14px;
     border: 0px;
     border-radius: 6px;
-    align: center;
+    align: left;
 }
 
 .left {
     height: 100%; /* Full-height: remove this if you want "auto" height */
-    width: 200x; /* Set the width of the sidebar */
+    width: 256px; /* Set the width of the sidebar */
     position: fixed; /* Fixed Sidebar (stay in place on scroll) */
     z-index: 1; /* Stay on top */
     top: 0; /* Stay at the top */

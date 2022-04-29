@@ -16,6 +16,19 @@
     menubar: false, statusbar: false, toolbar: false, height: 100, width: 550,branding: false
     });
     </script>  
+
+    <script>
+    function reloadPage() {
+var currentDocumentTimestamp =
+new Date(performance.timing.domLoading).getTime();
+var now = Date.now();
+var tenSec = 10 * 1000;
+var plusTenSec = currentDocumentTimestamp + tenSec;
+if (now > plusTenSec) {
+location.reload();
+} else {}
+}
+</script>
 </head>
 <body>
-<div class=logo><center><img src="top.jpg"></center></div>
+<div class=logo><h1>Бесконечность не предел.....</h1></div>
