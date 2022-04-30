@@ -354,7 +354,8 @@ char *url_decode(const char *str)
 */
 int echofile(char *filename, FCGX_Request request)
 {
-  FILE *f = fopen(filename, "rb");
+  sprintf(left,"/opt/shcms/%s",filename);
+  FILE *f = fopen(left, "rb");
   fseek(f, 0, SEEK_END);
   long fsize = ftell(f);
   fseek(f, 0, SEEK_SET); /* same as rewind(f); */
