@@ -16,10 +16,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <tidy/tidy.h>
-#include <tidy/tidybuffio.h>
 #include <time.h>
 #include <unistd.h>
+#include <curl/curl.h>
+
 
 typedef unsigned int uint;
 
@@ -27,14 +27,22 @@ typedef struct user
 {
   int uid;
   char *name;
+  int admin;
   
 } user;
 
 MYSQL *con;
 MYSQL *siriinit();
 FCGX_Request r;
+
 char *left;
 char *query;
+char *len;
+char *m;
+char *nu;
+char *mailto;
+char *payload;
+
 static inline int av_tolower(int c);
 char *url_decode(const char *str);
 int echofile(char *filename, FCGX_Request request);
@@ -56,6 +64,12 @@ void quit(FCGX_Request r);
 //void topic(FCGX_Request r);
 void addtopic(FCGX_Request r);
 void newtopic(FCGX_Request r);
+void send_payload(char *mailto, char *hash);
+int sendpay(char *mailto);
+void valid(FCGX_Request r);
+void noc(FCGX_Request r);
+void justone(long int id, FCGX_Request r);  
+
 
 
 #define SOCKET_PATH "0.0.0.0:9998"
@@ -66,6 +80,9 @@ int doit()
   con = siriinit();
   left = (char *)malloc(1024);
   query = (char *)malloc(1024);
+  char *len = malloc(16);
+  char *m = malloc(32);
+  char *nu = malloc(1024);
   FCGX_Request r;
   FCGX_Init();
   socketId = FCGX_OpenSocket(SOCKET_PATH, 20);
@@ -127,7 +144,7 @@ int doit()
     {
       add(r);
     }
-    if (strcmp(page, "/addtopic") == 0)
+      if (strcmp(page, "/addtopic") == 0)
     {
       addtopic(r);
     }
@@ -138,9 +155,17 @@ int doit()
     {
       newtopic(r);
     }
-     if (strstr(page, "more"))
+    if (strstr(page, "more"))
     {  
       more(r);
+    } 
+    if (strstr(page, "valid"))
+    {  
+      valid(r);
+    } 
+    if (strstr(page, "noc"))
+    {  
+      noc(r);
     } 
 
   /*  valme = regcomp(&exme, "[:/menu?1-90e:]", 0);
@@ -160,8 +185,11 @@ int doit()
    
     FCGX_Finish_r(&r);
   }
+  free(nu);
+  free(m);
   free(left);
   free(query);
+  free(len);
   free(page);
   mysql_close(con);
 }
@@ -182,7 +210,7 @@ MYSQL *siriinit()
     exit(1);
   }
 
-  mysql_real_connect(con, "mysql", "root", "azwsdcrf321", "gobit", 0,
+  mysql_real_connect(con, "127.0.0.1", "root", "azwsdcrf321", "gobit", 0,
                      NULL, CLIENT_INTERACTIVE);
   mysql_query(con, "SET NAMES utf8 COLLATE utf8_unicode_ci");
   return con;
@@ -407,8 +435,8 @@ char *parse_post(char *input, char *find, int mosk)
     return NULL;
 
   //   while (end = strstr(end,"&nbsp;"))
-  // end = strchr(end+3,'&');
-  // int nb = 3;
+ //  end = strchr(end+3,'&');
+ //  int nb = 3;
   char *end;
   char *next;
   next = start;
@@ -460,11 +488,15 @@ char *parse_post(char *input, char *find, int mosk)
 }
 char *ssha(const char *buf1)
 {
-  char *res = (char *)malloc(64);
+  char *res = (char *)malloc(64); 
   char *laende = (char *)malloc(64);
   unsigned char *d = SHA256(buf1, strlen(buf1), 0);
-
   int i;
+  for (i = 0; i < 65; i++)
+  {
+      res[i] = 0;
+      laende[i] = 0;
+  }
   for (i = 0; i < SHA256_DIGEST_LENGTH; i++)
   {
     sprintf(res, "%02x", d[i]);
@@ -475,6 +507,7 @@ char *ssha(const char *buf1)
 
 int reg(FCGX_Request r)
 {
+  payload = malloc(65);
   FCGX_PutS("Content-type: text/html\r\n", r.out);
   FCGX_PutS("\r\n", r.out);
 
@@ -487,7 +520,7 @@ int reg(FCGX_Request r)
     int err;
     err = 0;
 
-    char *len = malloc(16);
+    
     len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
     int ilen = atoi(len);
     char *rawbufp = (char *)calloc(ilen, sizeof(char));
@@ -501,11 +534,14 @@ int reg(FCGX_Request r)
     char *email = parse_post(bufp, "email=", 40);
     char *pass = parse_post(bufp, "pass=", 40);
     char *pmore = parse_post(bufp, "pmore=", 40);
-
+    char *fname = parse_post(bufp, "fname=", 40);
+    char *sname = parse_post(bufp, "sname=", 40);
+    char *invite = parse_post(bufp, "invite=", 40);
+    
     if (!pogin)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://serenity-net.org/regform\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -513,7 +549,7 @@ int reg(FCGX_Request r)
     if (!email)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://serenity-net.org/regform\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -521,19 +557,45 @@ int reg(FCGX_Request r)
     if (!pass)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://serenity-net.org/regform\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
-    }
+    }    
     if (!pmore)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://serenity-net.org/regform\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
     }
+    if (!fname)
+    {
+      FCGX_PutS("Something is wrong, go back to <a "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "try again.",
+                r.out);
+      return 0;
+    }
+    if (!sname)
+    {
+      FCGX_PutS("Something is wrong, go back to <a "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "try again.",
+                r.out);
+      return 0;
+    }
+    if (!invite)
+    {
+      FCGX_PutS("Something is wrong, go back to <a "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "try again.",
+                r.out);
+      return 0;
+    }
+    
+    
     val = regcomp(&ex, "[A-Za-z0-9;()-_;:.@А-Яа-я]", 0);
     sprintf(query, "select * from users where name='%s'", pogin);
     // FCGX_PutS(query,r.out);
@@ -547,21 +609,21 @@ int reg(FCGX_Request r)
       res = regexec(&ex, pogin, 0, NULL, 0);
       if (!res)
       {
-        FCGX_PutS("name match regexp <br>", r.out);
+        FCGX_PutS("nicname is ok<br>", r.out);
       }
       else
       {
-        FCGX_PutS("name do not match regexp <br>", r.out);
+        FCGX_PutS("nicname contibs not usable characters <br>", r.out);
         err = 1;
       }
       res = regexec(&ex, pass, 0, NULL, 0);
       if (!res)
       {
-        FCGX_PutS("pass match regex <br>", r.out);
+        FCGX_PutS("pass ok <br>", r.out);
       }
       else
       {
-        FCGX_PutS("pass do not match regexp <br>", r.out);
+        FCGX_PutS("Error in pass<br>", r.out);
         err = 1;
       }
       if (!strcmp(pass, pmore))
@@ -573,40 +635,42 @@ int reg(FCGX_Request r)
         FCGX_PutS("pass and once more again password not the same <br>", r.out);
         err = 1;
       }
+      
+      //val = regcomp(&ex, "^([a-z0-9])(([-a-z0-9._])*([a-z0-9]))*@([a-z0-9])(([a-z0-9-])*([a-z0-9]))+(.([a-z0-9])([-a-z0-9_-])?", 0);
       res = regexec(&ex, email, 0, NULL, 0);
       if (!res)
       {
-        FCGX_PutS("email match regexp <br>", r.out);
+        FCGX_PutS("email is ok <br>", r.out);
       }
       else
       {
-        FCGX_PutS("email do not match regexp <br>", r.out);
+        FCGX_PutS("this is not email<br>", r.out);
         err = 1;
       }
-      if (err == 0)
+      if ((err == 0) && (strcmp(invite,"gladiolus") == 0)&& (strlen(fname) > 0) && (strlen(sname) > 0) && (strlen(pass) > 4 ))
       {
+       // char *payload = malloc(65);
+        payload = ssha(foo());
+        send_payload(email, payload);
         sprintf(query,
-                "insert into users (name, pass, email) "
-                "values('%s',md5('%s'),'%s')",
-                pogin, pass, email);
+                "insert into users (name, pass, email,fname,sname,payload) "
+                "values('%s',md5('%s'),'%s','%s','%s','%s')",
+                pogin, pass, email, fname, sname, payload);
         mysql_query(con, query);
         FCGX_PutS(mysql_error(con), r.out);
-        FCGX_PutS("User added. Login <a "
+        /*FCGX_PutS("User added. Login <a "
                   "href=\"http://dev.shushik.kiev.ua/"
-                  "login.html\">dev.shushik.kiev.ua\"</a>",
-                  r.out);
+                  "login.html\">dev.shushik.kiev.ua"</a>",
+                  r.out); */
         free(pogin);
         free(email);
         free(pass);
-        free(pmore);
-        free(bufp);
-        regfree(&ex);
       }
       else
       {
         //		send_headers(r);
         FCGX_PutS("Something is wrong, go back to <a "
-                  "href=\"http://serenity-net.org/regform\">Registration</a> "
+                  "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> "
                   "and try again.",
                   r.out);
         free(pogin);
@@ -632,6 +696,47 @@ int reg(FCGX_Request r)
   }
 }
 
+
+void valid(FCGX_Request r)
+{
+  nu = FCGX_GetParam("REQUEST_URI", r.envp);
+  char *n = strstr(nu, "/valid=");
+  if (n)
+  {
+    char *e = strchr(nu, 0);
+    char *mmm = malloc(65);
+    e = strchr(nu, 0);
+    int plen = e - (nu + 7);
+    memcpy(mmm, nu + 7, plen);
+    sprintf(query,
+            "select id, kilo from users where payload='%s'",
+            mmm);
+    mysql_query(con, query);
+    MYSQL_RES *confres = mysql_store_result(con);
+    int totalrows = mysql_num_rows(confres);
+    MYSQL_ROW row;
+    row = mysql_fetch_row(confres);
+    if (totalrows > 0)
+    {
+    sprintf(query,
+            "update users set checked='1' where payload='%s'",
+            mmm);
+    mysql_query(con, query);
+    FCGX_PutS("Content-type: text/html\r\n", r.out);
+    FCGX_PutS("\r\n", r.out);
+      FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
+                "window.location.href = "
+                "\"http://dev.shushik.kiev.ua/login.html\";</script>",
+                r.out);
+      
+    }
+    else
+        FCGX_PutS("Somthing wrong with you code",r.out);
+
+  }
+
+  
+}
 int signin(FCGX_Request r)
 {
   // char met[5];
@@ -639,10 +744,10 @@ int signin(FCGX_Request r)
   if (!strcmp(FCGX_GetParam("REQUEST_METHOD", r.envp), "POST"))
   {
 
-    char *len = malloc(16);
+  //  char *len = malloc(16);
     len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
     int ilen = atoi(len);
-    char *rawbufp = (char *)calloc(ilen, sizeof(char));
+    char *rawbufp = (char *)malloc(ilen);
 
     FCGX_GetStr(rawbufp, ilen, r.in);
     char *bufp = url_decode(rawbufp);
@@ -652,7 +757,7 @@ int signin(FCGX_Request r)
 
     char *pogin = parse_post(bufp, "name=", 32);
     char *pass = parse_post(bufp, "pass=", 32);
-
+    
     sprintf(query,
             "select id, kilo from users where name='%s' and pass=md5('%s')",
             pogin, pass);
@@ -704,7 +809,7 @@ int signin(FCGX_Request r)
 
     // FCGX_PutS("Theris not such user.", r.out);
     //  }
-  free(len);
+//  free(len);
   free(bufp);
   free(pogin);
   free(pass);
@@ -808,7 +913,7 @@ user getuser(FCGX_Request r)
     memcpy(kilo, cookie + 5, 64);
     kilo[64] = 0;
     //   FCGX_PutS(kilo, r.out);
-    sprintf(query, "select id, name from users where kilo='%s'", kilo);
+    sprintf(query, "select id, name, admin from users where kilo='%s'", kilo);
     mysql_query(con, query);
     //   FCGX_PutS(mysql_error(con), r.out);
     MYSQL_RES *confres = mysql_store_result(con);
@@ -824,7 +929,10 @@ user getuser(FCGX_Request r)
         if (row[0])
         {
           luser.uid = atoi(row[0]);
+          luser.name = (char *)malloc(strlen(row[1]));
           luser.name = row[1];
+          if(row[2])
+          luser.admin = 1;
           return luser;
         }
         else
@@ -889,13 +997,12 @@ void quit(FCGX_Request r)
 void addtopic(FCGX_Request r)
 {
   user luser = getuser(r);
-  char *m = malloc(16);
   m = FCGX_GetParam("REQUEST_METHOD", r.envp);
   if (!strcmp(m, "POST"))
   {
     if (luser.uid)
     {
-      char *len = malloc(16);
+     // char *len = malloc(16);
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       int ilen = atoi(len);
       if ((ilen > 0) && (ilen < 140))
@@ -992,7 +1099,7 @@ void topic(FCGX_Request r)
           break;
         }
         char *bufp = url_decode(rawbufp);
-        bufp[ilen] = 0;
+        bufp[ilen] = 
         free(rawbufp);
         char *idnt = parse_post(bufp, "ident=", 8);
         if (strcmp(idnt, "addtopic") == 0)
@@ -1084,6 +1191,67 @@ void topic(FCGX_Request r)
 */
 //#define HUGEQUERY(id) sprintf(query1,"WITH RECURSIVE msg_path (id,date, data, parent, lvl, path, name, subj) AS ( SELECT id, date, SUBSTRING(data,1,600), parent, 0 lvl, data as path, (select name from users where users.id = msg.owner),subj FROM msg WHERE id = '%s'  UNION ALL SELECT msg.id, msg.date, SUBSTRING(msg.data,1,600), msg.parent, msgp.lvl + 1, concat(msgp.path, \">\", msg.data),(select users.name from users where users.id = msg.owner), msg.subj FROM msg_path AS msgp  JOIN msg AS msg ON msgp.id = msg.parent ) SELECT * FROM msg_path order by path desc, date asc",cid);
 
+
+void noc(FCGX_Request r)
+{
+  user luser = getuser(r);
+  if (luser.admin)
+  {
+
+      echofile("header.tpl", r);
+      FCGX_PutS("<p><div class=left><a href=\"/noc=srv\">Servers</a><br>"  , r.out);
+      FCGX_PutS("<a href=\"/noc=dns\">DNS</a></br></p></div>", r.out);
+      nu = FCGX_GetParam("REQUEST_URI", r.envp);
+        char *n = strstr(nu, "/noc");
+      if (n)
+      {
+        char *e = strchr(nu, 0);
+        char *mmm = malloc(65);
+        e = strchr(nu, 0);
+        int plen = e - (nu + 5);
+        if (plen > 0)
+        memcpy(mmm, nu + 5, plen);
+        mmm[plen] = 0;
+        if (strcmp(mmm,"dns") == 0){
+          FCGX_PutS("<div class=com>", r.out);
+          
+          sprintf(query,"select name, s1.hostname,s2.hostname from domains d inner join nodes s1 on d.master=s1.id inner join nodes s2 ON d.slave=s2.id where d.owner=%d;",luser.uid);
+          mysql_query(con, query);
+          FCGX_PutS(mysql_error(con), r.out);
+          FCGX_PutS("<table><tr><td>domain</td><td>master</td><td>slave</td></tr>",r.out);
+          int totalrows = 0;
+          MYSQL_RES *confres = mysql_store_result(con);
+          if (confres)
+          {
+
+            totalrows = mysql_num_rows(confres);
+            if (totalrows > 0)
+            {
+              MYSQL_ROW row;
+              while (row = mysql_fetch_row(confres))
+              { 
+                sprintf(left,"<tr><td><a href=\"/noc=dns&domain=%s>%s</a></td><td>%s</td><td>%s</td></tr>",row[0],row[0],row[1],row[2]);
+                FCGX_PutS(left,r.out);
+              }
+            }
+          }
+          FCGX_PutS("</div></table>",r.out);
+        } 
+        if(strstr(nu,"/noc=dns&domain=")) {
+          e = strchr(nu, 0);
+          int plen = e - (nu + 16);
+          if (plen > 0)
+          memcpy(mmm, nu + 16, plen);
+          mmm[plen] = 0;
+          
+        }
+        //else justone(30,r);
+      echofile("footer.tpl",r);
+    }
+  }
+}
+
+
 void one(long int id, int cutflag, FCGX_Request r)
 {
   mysql_query(con, "SELECT max(id) from msg;");
@@ -1149,8 +1317,8 @@ void one(long int id, int cutflag, FCGX_Request r)
         {
 
           int lvl = atoi(row1[4]);
-          int n = 30 + 5 * lvl;
-          int m = 70  ;
+          int n = 30 + 2 * lvl;
+          int m = 70;
           FCGX_PutS("<div class=sh>", r.out);
           sprintf(left, "<div class=com style=\"left: %d\%; width: %d\%;\">",
                   n - 3, m);
@@ -1164,7 +1332,7 @@ void one(long int id, int cutflag, FCGX_Request r)
           FCGX_PutS(row1[2], r.out);
           if (cutflag)
           {
-            sprintf(left, "<p><a href=\"https://dev.shushik.kiev.ua/more?%s\">more...</a></p>", row1[0]);
+            sprintf(left, "<p><a href=\"http://dev.shushik.kiev.ua/more?%s\">more...</a></p>", row1[0]);
             FCGX_PutS(left, r.out);
           }
           sprintf(left,
@@ -1214,27 +1382,67 @@ void art(FCGX_Request r)
 
 void more(FCGX_Request r)
 {
-  char *nu = (char *)malloc(32);
+ // char *nu = (char *)malloc(32);
   nu = FCGX_GetParam("REQUEST_URI", r.envp);
 
   if (strstr(nu, "more"))
   {
     header(r);
     char *e = strchr(nu, 0);
-    char *mid = malloc(16);
     e = strchr(nu, 0);
     int plen = e - (nu + 6);
-    memcpy(mid, nu + 6, plen);
-    long int id = atoi(mid);
+    memcpy(m, nu + 6, plen);
+    long int id = atoi(m);
     one(id, 0, r);
-    mid[plen] = 0;
+    m[plen] = 0;
     int uid = getsuid(r);
 
     echofile("footer.tpl", r);
   }
-  free(nu);
+ // free(nu);
 }
 
+
+void justone(long int id, FCGX_Request r)
+{
+    sprintf(query,"SELECT msg.id, msg.date, data, parent, name, subj from msg left join users on msg.owner=users.id where msg.id='%d'",id);
+
+    //"order by CASE when parent = 0 then date end desc, path asc, CASE when
+    // parent<>0 then path end desc, date asc", 0 , max, min );
+    // sprintf(left,"%d",strlen(query1));
+    // FCGX_PutS(left, r.out);
+    mysql_real_query(con, query, strlen(query));
+    FCGX_PutS(mysql_error(con), r.out);
+    int totalrows1 = 0;
+    MYSQL_RES *confres1 = mysql_store_result(con);
+    if (confres1)
+    {
+
+      totalrows1 = mysql_num_rows(confres1);
+      if (totalrows1 > 0)
+      {
+        MYSQL_ROW row1;
+        while (row1 = mysql_fetch_row(confres1))
+        {
+
+          FCGX_PutS("<div class=sh>", r.out);
+          sprintf(left, "<div class=com>",
+                  3, m);
+          FCGX_PutS(left, r.out);
+          FCGX_PutS(row1[2], r.out);
+          sprintf(left,
+                  "<br><p style=\"font-size: 12px;\", color: red;\">Posted by "
+                  "%s on %s",
+                  row1[4], row1[1]);
+          FCGX_PutS(left, r.out);
+          // free(left);
+          
+          FCGX_PutS("</div>", r.out);
+          FCGX_PutS("</div>", r.out);
+        }    
+      }
+    }
+}
 //}
 /*
 char *leprozory(const char *input)
@@ -1287,7 +1495,7 @@ char *leprozory(const char *input)
 void addmsg(FCGX_Request r)
 {
   //  send_headers(r);
-  char *nu = (char *)malloc(32);
+//  char *nu = (char *)malloc(32);
   nu = FCGX_GetParam("REQUEST_URI", r.envp);
   char *n = strstr(nu, "/addmsg");
   if (n)
@@ -1299,13 +1507,13 @@ void addmsg(FCGX_Request r)
 
       //char *eight = (char *)malloc(8);
       //sprintf(eight, "%d", luser.uid);
-      char *m = malloc(5);
+    //  char *m = malloc(5);
       m = FCGX_GetParam("REQUEST_METHOD", r.envp);
       //      FCGX_PutS(method,r.out);
       if (!strcmp(m, "POST"))
       {
         //	    FCGX_PutS(method,r.out);
-        char *len = malloc(16);
+      //  char *len = malloc(16);
         len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
         int ilen = atoi(len);
         if (ilen > 0)
@@ -1353,9 +1561,9 @@ void addmsg(FCGX_Request r)
           free(querybig);
           free(bufp);
         //  free(eight);
-          free(m);
+        // free(m);
           free(parent);
-          free(len);
+        //  free(len);
           free(end);
         } // there in post zero.
         FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
@@ -1369,13 +1577,13 @@ void addmsg(FCGX_Request r)
       FCGX_PutS("You are not registerd", r.out);
   }
   free(n);
-  free(nu);
+ // free(nu);
 }
 
 void addart(FCGX_Request r)
 {
   //  send_headers(r);
-  char *nu = (char *)malloc(32);
+//  char *nu = (char *)malloc(32);
   //  echofile("header.tpl", r);
   user luser = getuser(r);
   if (luser.uid)
@@ -1389,7 +1597,7 @@ void addart(FCGX_Request r)
     if (!strcmp(m, "POST"))
     {
       //	    FCGX_PutS(method,r.out);
-      char *len = malloc(16);
+    //  char *len = malloc(16);
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       uint ilen = atoi(len);
       if (ilen > 0)
@@ -1450,13 +1658,13 @@ void addart(FCGX_Request r)
                 "\"http://dev.shushik.kiev.ua/art\";</script>",
                 r.out);
 
-      free(len);
+//      free(len);
     }
-    free(m);
+   // free(m);
   }
   else
     FCGX_PutS("You are not registerd", r.out);
-    free(nu);
+//    free(nu);
 }
 
 #define MAXLINE 38400
@@ -1513,7 +1721,7 @@ void image(FCGX_Request r)
             i++;
           }
       */
-      char *len = malloc(16);
+    //  char *len = malloc(16);
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       int ilen = atoi(len);
 
@@ -1823,7 +2031,7 @@ void newtopic(FCGX_Request r)
           
           while (row = mysql_fetch_row(confres1))
           {
-              sprintf(left, "<a href=\"https://dev.shushik.kiev.ua/menu%s\">%s</a> <br>",row[0],row[1]);
+              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/menu%s\">%s</a> <br>",row[0],row[1]);
               FCGX_PutS(left,r.out);
           }
           FCGX_PutS(mysql_error(con), r.out);
@@ -1833,7 +2041,7 @@ void newtopic(FCGX_Request r)
         /*  if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"https://dev.shushik.kiev.ua/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           */  
@@ -1873,7 +2081,7 @@ void newtopic(FCGX_Request r)
 
 void bin(FCGX_Request r)
 {
-  char *nu = (char *)malloc(32);
+ // char *nu = (char *)malloc(32);
   nu = FCGX_GetParam("REQUEST_URI", r.envp);
 
   if (strstr(nu, "bin"))
@@ -1925,7 +2133,7 @@ void bin(FCGX_Request r)
           if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"https://dev.shushik.kiev.ua/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           mysql_query(con, query);
@@ -1964,4 +2172,157 @@ void bin(FCGX_Request r)
     else
       FCGX_PutS("Database error", r.out);
   }
+}
+#define FROM_MAIL "noreply@dev.shushik.kiev.ua"
+
+
+char *pay_txt(){
+
+
+  char *payload_text = malloc(1024);
+  sprintf(payload_text,"From: <%s>\r\n"
+    "To: <%s>\r\n"
+    "Subject: validate you email at dev.shushik.kiev.uar\n"
+    "MIME-Version: 1.0"
+    "Content-Type: multipart/alternative; boundary=\"outer-boundary\""
+    "\r\n"
+      "\r\n"
+      "Validate your email by going to this http://dev.shushik.kiev.ua/valid=%s \r\n"
+    "\r\n"
+    ".\r\n", FROM_MAIL, mailto, payload, payload);
+    
+    return payload_text;
+}
+
+
+
+void send_payload(char *mailto, char *hash)
+
+{
+    struct tm *mt;
+    time_t mtt;
+    char ftime[30];
+
+    setenv("TZ", "EEST", 1);
+    tzset();
+    mtt = time(NULL);
+    mt = localtime(&mtt);
+    strftime(ftime,sizeof(ftime),"%c %Z",mt);
+    char *payload_text = malloc(8096);  
+  
+  sendpay(mailto);
+} 
+struct upload_status {
+  size_t bytes_read;
+};
+ 
+static size_t payload_source(char *ptr, size_t size, size_t nmemb, void *userp)
+{
+  char *payload_text = pay_txt();
+  struct upload_status *upload_ctx = (struct upload_status *)userp;
+  const char *data;
+  size_t room = size * nmemb;
+ 
+  if((size == 0) || (nmemb == 0) || ((size*nmemb) < 1)) {
+    return 0;
+  }
+ 
+  data = &payload_text[upload_ctx->bytes_read];
+ 
+  if(data) {
+    size_t len = strlen(data);
+    if(room < len)
+      len = room;
+    memcpy(ptr, data, len);
+    upload_ctx->bytes_read += len;
+ 
+    return len;
+  }
+ 
+  return 0;
+
+}
+ 
+int sendpay(char *mailto)
+{
+  CURL *curl;
+  CURLcode res = CURLE_OK;
+  struct curl_slist *recipients = NULL;
+  struct upload_status upload_ctx = { 0 };
+ 
+  curl = curl_easy_init();
+  if(curl) {
+    /* Set username and password */
+    curl_easy_setopt(curl, CURLOPT_USERNAME, "noreply@shushik.kiev.ua");
+    curl_easy_setopt(curl, CURLOPT_PASSWORD, "azwsdcrf321");
+ 
+    /* This is the URL for your mailserver. Note the use of port 587 here,
+     * instead of the normal SMTP port (25). Port 587 is commonly used for
+     * secure mail submission (see RFC4403), but you should use whatever
+     * matches your server configuration. */
+    curl_easy_setopt(curl, CURLOPT_URL, "smtp://soap.shushik.kiev.ua:587");
+ 
+    /* In this example, we will start with a plain text connection, and upgrade
+     * to Transport Layer Security (TLS) using the STARTTLS command. Be careful
+     * of using CURLUSESSL_TRY here, because if TLS upgrade fails, the transfer
+     * will continue anyway - see the security discussion in the libcurl
+     * tutorial for more details. */
+    curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
+ 
+    /* If your server does not have a valid certificate, then you can disable
+     * part of the Transport Layer Security protection by setting the
+     * CURLOPT_SSL_VERIFYPEER and CURLOPT_SSL_VERIFYHOST options to 0 (false). */
+         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+     /* That is, in general, a bad idea. It is still better than sending your
+     * authentication details in plain text though.  Instead, you should get
+     * the issuer certificate (or the host certificate if the certificate is
+     * self-signed) and add it to the set of certificates that are known to
+     * libcurl using CURLOPT_CAINFO and/or CURLOPT_CAPATH. See docs/SSLCERTS
+     * for more information. */
+    // curl_easy_setopt(curl, CURLOPT_CAINFO, "/path/to/certificate.pem");
+ 
+    /* Note that this option is not strictly required, omitting it will result
+     * in libcurl sending the MAIL FROM command with empty sender data. All
+     * autoresponses should have an empty reverse-path, and should be directed
+     * to the address in the reverse-path which triggered them. Otherwise,
+     * they could cause an endless loop. See RFC 5321 Section 4.5.5 for more
+     * details.
+     */
+    curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM_MAIL);
+ 
+    /* Add two recipients, in this particular case they correspond to the
+     * To: and Cc: addressees in the header, but they could be any kind of
+     * recipient. */
+    recipients = curl_slist_append(recipients, mailto);
+    curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
+ 
+    /* We are using a callback function to specify the payload (the headers and
+     * body of the message). You could just use the CURLOPT_READDATA option to
+     * specify a FILE pointer to read from. */
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
+    curl_easy_setopt(curl, CURLOPT_READDATA,  &upload_ctx);
+    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+ 
+    /* Since the traffic will be encrypted, it is very useful to turn on debug
+     * information within libcurl to see what is happening during the transfer.
+     */
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+ 
+    /* Send the message */
+    res = curl_easy_perform(curl);
+ 
+    /* Check for errors */
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+ 
+    /* Free the list of recipients */
+    curl_slist_free_all(recipients);
+ 
+    /* Always cleanup */
+    curl_easy_cleanup(curl);
+  }
+ 
+  return (int)res;
 }

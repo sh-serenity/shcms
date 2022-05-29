@@ -12,7 +12,6 @@ a	{
 
 div.sh	{
     background-color: #ffffff;
-    left: 30%;
     margin: 0px;
     margin-left: auto;
     margin-right: auto;
@@ -27,15 +26,7 @@ div.menu	{
 
 div.hello	{
     background-color: green;
-    width: 70%;
     margin: 0px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 8px 32px 8px 32px;
-    align: center;
-    border: 1px solid #004400;
-    border-radius: 6px;
-
 }
 
 .logo {
@@ -50,7 +41,7 @@ div.hello	{
     overflow: hidden; 
     top: 0px;
     width: max-content;;   
-    max-width: 30%;
+    max-width: 70%;
     background-color: #6d9720; 
     float: right;    
     
@@ -95,20 +86,18 @@ a.sh {
     background: #fc3;
 }
 .com {
+    position: relative;
     background-color: #948f8f;
-    right: 30%;
-    width: 70%;
+    left: 256px;
     font-size: 14px;
     border: 0px;
     border-radius: 6px;
-    align: left;
 }
 
-.left {
+div.left {
     height: 100%; /* Full-height: remove this if you want "auto" height */
     width: 256px; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
+    position:fixed;
     top: 0; /* Stay at the top */
     left: 0;
     background-color: #d5eea6;/* Black */
