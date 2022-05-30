@@ -121,7 +121,6 @@ int main()
         FCGX_GetStr(rawbufp, ilen, r.in);
         char *bufp = url_decode(rawbufp);
         bufp[ilen] = 0;
-        free(rawbufp);
      
         fputs(page, fe);
         fputs(bufp, fe);
