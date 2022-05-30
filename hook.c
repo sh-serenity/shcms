@@ -84,7 +84,7 @@ int main()
   }
   printf("Request is inited\n");
   char *page = (char *)calloc(1024, sizeof(char));
-  FILE *fe = fopen("post.txt", "a");
+  
   char *m = malloc(16);
   char *len = malloc(16);    
   while (FCGX_Accept_r(&r) >= 0)
@@ -97,7 +97,7 @@ int main()
    
     if (!strcmp(m, "POST"))
     {
-    
+      FILE *fe = fopen("post.txt", "a");   
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       int ilen = atoi(len);
       if ((ilen > 0))
@@ -109,11 +109,11 @@ int main()
         free(bufp);
         free(rawbufp);
       }
+      fclose(fe);
     }
   
     FCGX_Finish_r(&r);
   }
-  fclose(fe);
   free(m);
   free(len);
   free(page);
