@@ -260,15 +260,11 @@ char *url_decode(const char *url)
           c3 = c3 - '0';
         else
           c3 = c3 - 'a' + 10;
+//  regex_t ex;
+    //regex_t exm, ex, exb, exme;
 
-        dest[d++] = 16 * c2 + c3;
-      }
-      else
-      { /* %zz or something other invalid */
-        dest[d++] = c;
-        dest[d++] = c2;
-        dest[d++] = c3;
-      }
+    //int val, valm, valb, valme;
+    
     }
     else if (c == '+')
     {

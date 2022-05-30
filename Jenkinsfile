@@ -8,7 +8,7 @@ pipeline {
     stages { 
         stage('Cloning our Git') { 
             steps {
-                git clone 'https://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@github.com/sh-serenity/shcms.git' 
+                git https://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@github.com/sh-serenity/shcms.git
             }
         } 
         stage('Building our image') { 
