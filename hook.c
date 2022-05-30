@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "cJSON.c"
 
 #define SOCKET_PATH "0.0.0.0:9997"
 static int socketId;
@@ -110,26 +111,27 @@ int main()
     if (!strcmp(m, "POST"))
     {
       FCGX_PutS("Accept-Post: application/json\r\n\r\n", r.out);
-      FILE *fe = fopen("post.txt", "a");   
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       int ilen = atoi(len);
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
    
       if ((ilen > 0))
       {
+        FILE *fe = fopen("hook.txt", "a");
         char *rawbufp = malloc(ilen);
         FCGX_GetStr(rawbufp, ilen, r.in);
         char *bufp = url_decode(rawbufp);
         bufp[ilen] = 0;
-     
-        fputs(page, fe);
-        fputs(bufp, fe);
+        cJSON *bundle = cJSON_Parse(bufp);
+        char *str = cJSON_Print(bundle);
+        fputs(str, fe);
+        fclose(fe); 
         free(bufp);
         free(rawbufp);
+        free(str);
+        cJSON_Delete(bundle);
       }
-      fclose(fe);
     }
-  
     FCGX_Finish_r(&r);
   }
   free(m);
