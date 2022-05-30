@@ -1045,7 +1045,7 @@ void addtopic(FCGX_Request r)
             mysql_real_escape_string(con, end, newtopic, ntlen);
             sprintf(query, "insert into topic (name, parent) values('%s', '%s');", newtopic, parent);
             mysql_query(con, query);
-              FILE *fe = fopen("err", "a");
+            FILE *fe = fopen("err", "a");
             fputs(bufp, fe);
             FCGX_PutS(mysql_error(con), r.out);
             fputs(mysql_error(con), fe);

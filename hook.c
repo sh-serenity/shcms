@@ -5,11 +5,31 @@
 #include <string.h>
 #include <ctype.h>
 #include "cJSON.c"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 #define SOCKET_PATH "0.0.0.0:9997"
 static int socketId;
 
 FCGX_Request r;
+
+
+char *readfile(char *filename) {
+  FILE *f;
+  f = fopen(filename, "rb");
+  fseek(f, 0, SEEK_END);
+  long fsize = ftell(f);
+  fseek(f, 0, SEEK_SET);
+
+  char *string = (char *)calloc(fsize + 1, sizeof(char));
+  fread(string, fsize, 1, f);
+  fclose(f);
+
+  string[fsize] = 0;
+  return string;
+}
 
 static inline int av_tolower(int c)
 {
@@ -117,18 +137,41 @@ int main()
    
       if ((ilen > 0))
       {
-        FILE *fe = fopen("hook.txt", "a");
+        //FILE *fe = fopen("hook.txt", "a");
         char *rawbufp = malloc(ilen);
         FCGX_GetStr(rawbufp, ilen, r.in);
         char *bufp = url_decode(rawbufp);
         bufp[ilen] = 0;
         cJSON *bundle = cJSON_Parse(bufp);
-        char *str = cJSON_Print(bundle);
-        fputs(str, fe);
-        fclose(fe); 
+        cJSON *repo = cJSON_GetObjectItemCaseSensitive(bundle, "repository");
+        cJSON *full_name = cJSON_GetObjectItemCaseSensitive(repo,"full_name");
+        if(!strcmp(full_name->valuestring,"sh-serenity/shcms"))
+        {
+            FILE *fe = fopen("/build/buildnumebr", "r");
+            char *s = (char *)malloc(32);
+            fgets(s,32,fe);
+            fclose(fe);
+            int buildnumber = atoi(s);
+            buildnumber++;
+            fe = fopen("/buildnumebr", "w");
+            sprintf(s,"%d",buildnumber);
+            fputs(s,fe);
+            fclose(fe);
+            char *path = malloc(64);
+            sprintf(path,"/build/%s",s);
+            mkdir(path,755);
+            chdir(path);
+            char *start = readfile("/build/deploy.sh");
+            FILE *fp = fopen("deploy.sh", "wb");
+            fwrite(start, sizeof(char), strlen(start), fp);
+            fclose(fp);           
+            system("bash deploy.sh");
+            free(s);
+            free(path);
+            free(start);
+        }
         free(bufp);
         free(rawbufp);
-        free(str);
         cJSON_Delete(bundle);
       }
     }
