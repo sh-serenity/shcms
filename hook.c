@@ -89,11 +89,15 @@ int main()
   char *len = malloc(16);    
   while (FCGX_Accept_r(&r) >= 0)
   {
-   page = FCGX_GetParam("REQUEST_URI", r.envp);
-   m = FCGX_GetParam("REQUEST_METHOD", r.envp);
+    FCGX_PutS("Content-type: text/html\r\n", r.out);
+    FCGX_PutS("\r\n", r.out);
+
+    page = FCGX_GetParam("REQUEST_URI", r.envp);
+    m = FCGX_GetParam("REQUEST_METHOD", r.envp);
    
-   if (!strcmp(m, "POST"))
-   {
+    if (!strcmp(m, "POST"))
+    {
+    
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       int ilen = atoi(len);
       if ((ilen > 0))
@@ -105,9 +109,9 @@ int main()
         free(bufp);
         free(rawbufp);
       }
-   }
+    }
   
-   FCGX_Finish_r(&r);
+    FCGX_Finish_r(&r);
   }
   fclose(fe);
   free(m);
