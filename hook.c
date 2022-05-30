@@ -91,12 +91,14 @@ int main()
   {
     FCGX_PutS("Content-type: text/html\r\n", r.out);
     FCGX_PutS("\r\n", r.out);
+    FCGX_PutS("Accept-Post: application/json\r\n\r\n", r.out);
+      
       
     page = FCGX_GetParam("REQUEST_URI", r.envp);
     m = FCGX_GetParam("REQUEST_METHOD", r.envp);
     if (!strcmp(m, "POST"))
     {
-      FCGX_PutS("Accept-Post: application/octet-stream\r\n\r\n", r.out);
+      FCGX_PutS("Accept-Post: application/json\r\n\r\n", r.out);
       FILE *fe = fopen("post.txt", "a");   
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       int ilen = atoi(len);
