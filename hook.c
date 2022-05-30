@@ -89,8 +89,8 @@ int main()
   char *len = malloc(16);    
   while (FCGX_Accept_r(&r) >= 0)
   {
-    FCGX_PutS("Content-type: text/html\r\n", r.out);
-    FCGX_PutS("\r\n", r.out);
+  //  FCGX_PutS("Content-type: text/html\r\n", r.out);
+  //  FCGX_PutS("\r\n", r.out);
     FCGX_PutS("Accept-Post: application/json\r\n\r\n", r.out);
       
       
