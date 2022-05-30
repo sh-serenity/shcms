@@ -147,7 +147,7 @@ int main()
         cJSON *full_name = cJSON_GetObjectItemCaseSensitive(repo,"full_name");
         if(!strcmp(full_name->valuestring,"sh-serenity/shcms"))
         {
-            FILE *fe = fopen("/build/buildnumebr", "r");
+            FILE *fe = fopen("/build/buildnumber", "r");
             int buildnumber;
             fscanf(fe, "%d", &buildnumber);
             fclose(fe);
