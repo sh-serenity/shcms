@@ -105,6 +105,7 @@ int main()
       if ((ilen > 0))
       {
         char *rawbufp = malloc(ilen);
+        FCGX_GetStr(rawbufp, ilen, r.in);
         char *bufp = url_decode(rawbufp); 
         fputs(page, fe);
         fputs(bufp, fe);
