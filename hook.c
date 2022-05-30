@@ -23,6 +23,9 @@ char *url_decode(const char *url)
   char c;
   char *dest = NULL;
 
+  //  if (!url)
+  //      return NULL;
+
   url_len = strlen(url) + 1;
   dest = malloc(url_len);
 
@@ -51,7 +54,15 @@ char *url_decode(const char *url)
           c3 = c3 - '0';
         else
           c3 = c3 - 'a' + 10;
-    
+
+        dest[d++] = 16 * c2 + c3;
+      }
+      else
+      { /* %zz or something other invalid */
+        dest[d++] = c;
+        dest[d++] = c2;
+        dest[d++] = c3;
+      }
     }
     else if (c == '+')
     {
@@ -65,7 +76,7 @@ char *url_decode(const char *url)
 
   return dest;
 }
-}
+
 
 int main()
 {
@@ -102,11 +113,16 @@ int main()
       FILE *fe = fopen("post.txt", "a");   
       len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
       int ilen = atoi(len);
+      len = FCGX_GetParam("CONTENT_LENGTH", r.envp);
+   
       if ((ilen > 0))
       {
         char *rawbufp = malloc(ilen);
         FCGX_GetStr(rawbufp, ilen, r.in);
-        char *bufp = url_decode(rawbufp); 
+        char *bufp = url_decode(rawbufp);
+        bufp[ilen] = 0;
+        free(rawbufp);
+     
         fputs(page, fe);
         fputs(bufp, fe);
         free(bufp);
