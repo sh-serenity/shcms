@@ -148,12 +148,12 @@ int main()
         if(!strcmp(full_name->valuestring,"sh-serenity/shcms"))
         {
             FILE *fe = fopen("/build/buildnumebr", "r");
-            char *s = (char *)malloc(32);
-            fgets(s,32,fe);
+            int buildnumber;
+            fscanf(fe, "%d", &buildnumber);
             fclose(fe);
-            int buildnumber = atoi(s);
             buildnumber++;
             fe = fopen("/buildnumebr", "w");
+            char *s = (char *)malloc(32);
             sprintf(s,"%d",buildnumber);
             fputs(s,fe);
             fclose(fe);
