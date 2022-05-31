@@ -541,7 +541,7 @@ int reg(FCGX_Request r)
     if (!pogin)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -549,7 +549,7 @@ int reg(FCGX_Request r)
     if (!email)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -557,7 +557,7 @@ int reg(FCGX_Request r)
     if (!pass)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -565,7 +565,7 @@ int reg(FCGX_Request r)
     if (!pmore)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -573,7 +573,7 @@ int reg(FCGX_Request r)
     if (!fname)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -581,7 +581,7 @@ int reg(FCGX_Request r)
     if (!sname)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -589,7 +589,7 @@ int reg(FCGX_Request r)
     if (!invite)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -659,8 +659,8 @@ int reg(FCGX_Request r)
         mysql_query(con, query);
         FCGX_PutS(mysql_error(con), r.out);
         /*FCGX_PutS("User added. Login <a "
-                  "href=\"http://k8s.shushik.kiev.ua/"
-                  "login.html\">k8s.shushik.kiev.ua"</a>",
+                  "href=\"http://dev.shushik.kiev.ua/"
+                  "login.html\">dev.shushik.kiev.ua"</a>",
                   r.out); */
         free(pogin);
         free(email);
@@ -670,7 +670,7 @@ int reg(FCGX_Request r)
       {
         //		send_headers(r);
         FCGX_PutS("Something is wrong, go back to <a "
-                  "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> "
+                  "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> "
                   "and try again.",
                   r.out);
         free(pogin);
@@ -726,7 +726,7 @@ void valid(FCGX_Request r)
     FCGX_PutS("\r\n", r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://k8s.shushik.kiev.ua/login.html\";</script>",
+                "\"http://dev.shushik.kiev.ua/login.html\";</script>",
                 r.out);
       
     }
@@ -790,22 +790,22 @@ int signin(FCGX_Request r)
       }
       //  FCGX_PutS("Location: http:/seti/art/",r.out);
       FCGX_PutS(" SameSite=Strict", r.out);
-      FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art", r.out);
+      FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
       FCGX_PutS("\r\n", r.out);
       FCGX_PutS("\r\n", r.out);
-      //    FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art",r.out);
+      //    FCGX_PutS("Location: http://dev.shushik.kiev.ua/art",r.out);
       //         FCGX_PutS("<head><meta http-equiv=\"refresh\"
-      //         content=\"0;URL=\http://k8s.shushik.kiev.ua/art\"/></head>
+      //         content=\"0;URL=\http://dev.shushik.kiev.ua/art\"/></head>
       //         ",r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://k8s.shushik.kiev.ua/art\";</script>",
+                "\"http://dev.shushik.kiev.ua/art\";</script>",
                 r.out);
     } // else {
       //  FCGX_PutS("Content-type: text/html\r\n", r.out);
     FCGX_PutS("\r\n", r.out);
     FCGX_PutS("\r\n", r.out);
-    // echofile("/opt/shcms/index.html",r.out)
+    // echofile("index.html",r.out)
 
     // FCGX_PutS("Theris not such user.", r.out);
     //  }
@@ -962,14 +962,14 @@ user header(FCGX_Request r)
 
   FCGX_PutS("\r\n", r.out);
   FCGX_PutS("\r\n", r.out);
-  echofile("/opt/shcms/header.tpl", r);
+  echofile("header.tpl", r);
   if (luser.uid)
   {
     sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><a class=sh href=\"/add\">Add</a></div>", luser.name);
     FCGX_PutS(left, r.out);
   }
   else
-    echofile("/opt/shcms/nologinmenu.tpl", r);
+    echofile("nologinmenu.tpl", r);
  
   return luser;
 }
@@ -989,7 +989,7 @@ void quit(FCGX_Request r)
   }
   FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
             "window.location.href = "
-            "\"http://k8s.shushik.kiev.ua/art\";</script>",
+            "\"http://dev.shushik.kiev.ua/art\";</script>",
             r.out);
 }
 
@@ -1186,7 +1186,7 @@ void topic(FCGX_Request r)
   //    fclose(fe);
   // }
 /*
-  echofile("/opt/shcms/footer.tpl", r);
+  echofile("footer.tpl", r);
 }
 */
 //#define HUGEQUERY(id) sprintf(query1,"WITH RECURSIVE msg_path (id,date, data, parent, lvl, path, name, subj) AS ( SELECT id, date, SUBSTRING(data,1,600), parent, 0 lvl, data as path, (select name from users where users.id = msg.owner),subj FROM msg WHERE id = '%s'  UNION ALL SELECT msg.id, msg.date, SUBSTRING(msg.data,1,600), msg.parent, msgp.lvl + 1, concat(msgp.path, \">\", msg.data),(select users.name from users where users.id = msg.owner), msg.subj FROM msg_path AS msgp  JOIN msg AS msg ON msgp.id = msg.parent ) SELECT * FROM msg_path order by path desc, date asc",cid);
@@ -1198,7 +1198,7 @@ void noc(FCGX_Request r)
   if (luser.admin)
   {
 
-      echofile("/opt/shcms/header.tpl", r);
+      echofile("header.tpl", r);
       FCGX_PutS("<p><div class=left><a href=\"/noc=srv\">Servers</a><br>"  , r.out);
       FCGX_PutS("<a href=\"/noc=dns\">DNS</a></br></p></div>", r.out);
       nu = FCGX_GetParam("REQUEST_URI", r.envp);
@@ -1246,7 +1246,7 @@ void noc(FCGX_Request r)
           
         }
         //else justone(30,r);
-      echofile("/opt/shcms/footer.tpl",r);
+      echofile("footer.tpl",r);
     }
   }
 }
@@ -1332,7 +1332,7 @@ void one(long int id, int cutflag, FCGX_Request r)
           FCGX_PutS(row1[2], r.out);
           if (cutflag)
           {
-            sprintf(left, "<p><a href=\"http://k8s.shushik.kiev.ua/more?%s\">more...</a></p>", row1[0]);
+            sprintf(left, "<p><a href=\"http://dev.shushik.kiev.ua/more?%s\">more...</a></p>", row1[0]);
             FCGX_PutS(left, r.out);
           }
           sprintf(left,
@@ -1397,7 +1397,7 @@ void more(FCGX_Request r)
     m[plen] = 0;
     int uid = getsuid(r);
 
-    echofile("/opt/shcms/footer.tpl", r);
+    echofile("footer.tpl", r);
   }
  // free(nu);
 }
@@ -1500,7 +1500,7 @@ void addmsg(FCGX_Request r)
   char *n = strstr(nu, "/addmsg");
   if (n)
   {
-    //  echofile("/opt/shcms/header.tpl", r);
+    //  echofile("header.tpl", r);
     user luser = getuser(r);
     if (luser.uid)
     {
@@ -1566,10 +1566,10 @@ void addmsg(FCGX_Request r)
         //  free(len);
           free(end);
         } // there in post zero.
-        FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art", r.out);
+        FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
         FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                   "window.location.href = "
-                  "\"http://k8s.shushik.kiev.ua/art\";</script>",
+                  "\"http://dev.shushik.kiev.ua/art\";</script>",
                   r.out);
       }
     }
@@ -1584,7 +1584,7 @@ void addart(FCGX_Request r)
 {
   //  send_headers(r);
 //  char *nu = (char *)malloc(32);
-  //  echofile("/opt/shcms/header.tpl", r);
+  //  echofile("header.tpl", r);
   user luser = getuser(r);
   if (luser.uid)
   {
@@ -1652,10 +1652,10 @@ void addart(FCGX_Request r)
         free(topic);
 
       } // there in post zero.
-      FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art", r.out);
+      FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://k8s.shushik.kiev.ua/art\";</script>",
+                "\"http://dev.shushik.kiev.ua/art\";</script>",
                 r.out);
 
 //      free(len);
@@ -1845,7 +1845,7 @@ void image(FCGX_Request r)
       //   FCGX_PutS(len,r.out);
       char *st = malloc(100);
       //  FCGX_PutS("Content-type: text/html\r\n\r\n",r.out);
-      sprintf(st, "k8s.shushik.kiev.ua/%s\r\n", fname);
+      sprintf(st, "dev.shushik.kiev.ua/%s\r\n", fname);
       printf(st);
       FCGX_PutS(st, r.out);
       //  FCGX_PutS(filename,r.out);
@@ -1876,7 +1876,7 @@ void add(FCGX_Request r)
   FCGX_PutS("\r\n", r.out);
   user luser = getuser(r);
   
-  echofile("/opt/shcms/shead.html", r);
+  echofile("shead.html", r);
   
   
       if (luser.uid)
@@ -1884,7 +1884,7 @@ void add(FCGX_Request r)
         sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><center><a class=sh href=\"/add\">Add</a></div>", luser.name);
         FCGX_PutS(left, r.out);
       
-        echofile("/opt/shcms/new.html", r); 
+        echofile("new.html", r); 
 
           //char *query = (char * )malloc(256);
 
@@ -1927,7 +1927,7 @@ void add(FCGX_Request r)
       
         FCGX_PutS("</form></div>", r.out);
       }
-      echofile("/opt/shcms/footer.tpl",r);
+      echofile("footer.tpl",r);
   }
       
     
@@ -2031,7 +2031,7 @@ void newtopic(FCGX_Request r)
           
           while (row = mysql_fetch_row(confres1))
           {
-              sprintf(left, "<a href=\"http://k8s.shushik.kiev.ua/menu%s\">%s</a> <br>",row[0],row[1]);
+              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/menu%s\">%s</a> <br>",row[0],row[1]);
               FCGX_PutS(left,r.out);
           }
           FCGX_PutS(mysql_error(con), r.out);
@@ -2041,7 +2041,7 @@ void newtopic(FCGX_Request r)
         /*  if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"http://k8s.shushik.kiev.ua/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           */  
@@ -2049,7 +2049,7 @@ void newtopic(FCGX_Request r)
           MYSQL_RES *confres2 = mysql_store_result(con);
           row = mysql_fetch_row(confres2);
           FCGX_PutS(mysql_error(con), r.out);
-          // echofile("/opt/shcms/edit1.html",r);
+          // echofile("edit1.html",r);
           sprintf(left, "<div class=\"sh\"><p>Subject: %s</p>"
                         "Now he is here: %s<br>"
                          "And in what place do you wnt to see it?<br>",row[0],row[2]);
@@ -2075,7 +2075,7 @@ void newtopic(FCGX_Request r)
     
   
 
-  echofile("/opt/shcms/footer.tpl",r);
+  echofile("footer.tpl",r);
  }
 //}
 
@@ -2123,7 +2123,7 @@ void bin(FCGX_Request r)
           //  int uid = atoi(row[0]);
 
           //   FCGX_PutS(row[0], r.out);
-          echofile("/opt/shcms/shead.html", r);
+          echofile("shead.html", r);
           FCGX_PutS("<div class=left>test", r.out);
           char *left = (char *)malloc(256);
           mysql_query(con, "select id, subj from msg;");
@@ -2133,14 +2133,14 @@ void bin(FCGX_Request r)
           if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"http://k8s.shushik.kiev.ua/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           mysql_query(con, query);
           MYSQL_RES *confres2 = mysql_store_result(con);
           row = mysql_fetch_row(confres2);
           FCGX_PutS(mysql_error(con), r.out);
-          // echofile("/opt/shcms/edit1.html",r);
+          // echofile("edit1.html",r);
           sprintf(left, "</div><div class=\"sh\">"
                         "<form action=\"/addart\" method=\"post\">"
                         "<p>Name: <input type=\"text\" id=\"subj\" name=\"subj\" value=\"%s\">"
@@ -2150,7 +2150,7 @@ void bin(FCGX_Request r)
           // Here is data going
 
           FCGX_PutS(row[1], r.out);
-          echofile("/opt/shcms/edit2.html", r);
+          echofile("edit2.html", r);
 
           mysql_query(con, "SELECT id, name from topic");
           MYSQL_RES *confres = mysql_store_result(con);
@@ -2164,7 +2164,7 @@ void bin(FCGX_Request r)
             }
         }
         FCGX_PutS("</form>/div></div>", r.out);
-        echofile("/opt/shcms/footer.tpl", r);
+        echofile("footer.tpl", r);
       }
       else
         FCGX_PutS("Database error", r.out);
@@ -2173,7 +2173,7 @@ void bin(FCGX_Request r)
       FCGX_PutS("Database error", r.out);
   }
 }
-#define FROM_MAIL "noreply@k8s.shushik.kiev.ua"
+#define FROM_MAIL "noreply@dev.shushik.kiev.ua"
 
 
 char *pay_txt(){
@@ -2182,12 +2182,12 @@ char *pay_txt(){
   char *payload_text = malloc(1024);
   sprintf(payload_text,"From: <%s>\r\n"
     "To: <%s>\r\n"
-    "Subject: validate you email at k8s.shushik.kiev.uar\n"
+    "Subject: validate you email at dev.shushik.kiev.uar\n"
     "MIME-Version: 1.0"
     "Content-Type: multipart/alternative; boundary=\"outer-boundary\""
     "\r\n"
       "\r\n"
-      "Validate your email by going to this http://k8s.shushik.kiev.ua/valid=%s \r\n"
+      "Validate your email by going to this http://dev.shushik.kiev.ua/valid=%s \r\n"
     "\r\n"
     ".\r\n", FROM_MAIL, mailto, payload, payload);
     

@@ -3,7 +3,7 @@
 <html lang="ru-RU">
 <head>
 <meta charset="utf-8">
-<title>meathost.org</title>
+<title>k8s.shushik.kiev.ua</title>
     <meta http-equiv="Content-Type" content="text/html"; charset=utf-8">
     <link rel="stylesheet" href="/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
