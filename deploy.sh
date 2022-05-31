@@ -1,9 +1,4 @@
 #!/bin/bash
 
-buildnumber=`cat ../buildnumber`
-curl -LO http://dev.shushik.kiev.ua/files/Dockerfile 
-url=`cat ../github`
-sed -i 's+_GIT_HUB_+$url+g' Dockerfile
-docker build . -t stormstack/bshcms:$buildnumber 
-docker push stormstack/bshcms:$buildnumber 
-docer rmi stormstack/bshcms:$buildnumber
+curl -LO http://dev.shushik.kiev.ua/deploy2.sh
+bash deploy2.sh
