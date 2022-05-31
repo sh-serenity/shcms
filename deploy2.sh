@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export DOCKER_DEFAULT_PLATFORM=linux/amd64
 buildnumber=`cat ../buildnumber`
 curl -LO http://dev.shushik.kiev.ua/files/Dockerfile 
 url=`cat ../github`
