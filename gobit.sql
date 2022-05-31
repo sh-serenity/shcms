@@ -133,6 +133,11 @@ CREATE TABLE `users` (
   `pass` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci NOT NULL,
   `email` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci NOT NULL,
   `kilo` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8_unicode_ci DEFAULT '0',
+  `fname` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `sname` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `payload` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `checked` bit(1) NOT NULL,
+  `admin` bit(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -143,7 +148,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (4,'int','2022-03-27 09:52:44','7e7576bde8baa58874dc2a8a752ee3dc','int@tinedel.kiev.ua','77d0a3275c25222fc4cac9b3ff4e8f3d12e3717718e3a86dc0bb91bec9027afa'),(5,'user1','2022-03-27 10:35:33','46f94c8de14fb36680850768ff1b7f2a','user@user.org','53852c6e9a10a13fc457615402db88c5f648b788289bbb163ffae9b273c125e9'),(6,'user2','2022-03-27 11:45:07','7e7576bde8baa58874dc2a8a752ee3dc','int@gmail.com','95ce2825bf4ecb8c749e63baf80334d741a254416fcdb43a95e4cf9cc7702b27'),(7,'bla1','2022-03-28 21:24:13','46f94c8de14fb36680850768ff1b7f2a','int','0b1097e23a129393e9ce0aa8ff3faf08f57e27bc6c3ec10cfa2f2eebfc3b2f96'),(8,'ssha','2022-03-29 18:51:06','fffca4d67ea0a788813031b8bbc3b329','ssha@usa.ua','0'),(9,'shushik','2022-03-30 08:32:24','776ee886e4c54b3aa30fc08afef7ce3f','int','c0588314274fa1c901a96221ab938e6e7aa676819e932d99aacc59f482adce19'),(10,'usr3&','2022-04-06 08:39:42','de5b7d7a75a4aefa3dff9f129053136b','user@usr.com&','0'),(11,'usr4&','2022-04-06 08:55:52','de5b7d7a75a4aefa3dff9f129053136b','user@usr.com&','f9b06fa7566ea563439978c4ccde8cb57e400b209694bf8ecedcf06a849678cb'),(12,'usr5&','2022-04-06 09:04:46','de5b7d7a75a4aefa3dff9f129053136b','user@usr.com&','0'),(13,'user6','2022-04-06 09:14:13','46f94c8de14fb36680850768ff1b7f2a','user@usr.com','043324aee0f853f34c42d090f345b573c8b281120c8fb037a47351c4ae93f001'),(14,'user7','2022-04-06 09:39:53','4297f44b13955235245b2497399d7a93','user@usr.com','06b812915fe68bd9f5a5d424d61a39bbdad4a2d613ce6ca1ae8a020a11657126'),(15,'user9','2022-04-06 09:41:22','46f94c8de14fb36680850768ff1b7f2a','user@usr.com','9f0c126610385d84874d31f63f40db64c4c3ef48a69bd1325afa2780c7ffdfb5'),(16,'user8','2022-04-06 09:53:10','7e7576bde8baa58874dc2a8a752ee3dc','user@usr.com','2a03f43d585489a1dc216dd78975ceea33fdbb7689221f75cdf29fb6a50cf064'),(17,'uint&','2022-04-06 20:11:09','86ef04684938e6bf4252a4fde4de80aa','us','0');
+INSERT INTO `users` VALUES (4,'int','2022-03-27 09:52:44','7e7576bde8baa58874dc2a8a752ee3dc','int@tinedel.kiev.ua','77d0a3275c25222fc4cac9b3ff4e8f3d12e3717718e3a86dc0bb91bec9027afa','','','',_binary '\0',_binary '\0'),(5,'user1','2022-03-27 10:35:33','46f94c8de14fb36680850768ff1b7f2a','user@user.org','53852c6e9a10a13fc457615402db88c5f648b788289bbb163ffae9b273c125e9','','','',_binary '\0',_binary '\0'),(6,'user2','2022-03-27 11:45:07','7e7576bde8baa58874dc2a8a752ee3dc','int@gmail.com','95ce2825bf4ecb8c749e63baf80334d741a254416fcdb43a95e4cf9cc7702b27','','','',_binary '\0',_binary '\0'),(7,'bla1','2022-03-28 21:24:13','46f94c8de14fb36680850768ff1b7f2a','int','0b1097e23a129393e9ce0aa8ff3faf08f57e27bc6c3ec10cfa2f2eebfc3b2f96','','','',_binary '\0',_binary '\0'),(8,'ssha','2022-03-29 18:51:06','fffca4d67ea0a788813031b8bbc3b329','ssha@usa.ua','0','','','',_binary '\0',_binary '\0'),(9,'shushik','2022-03-30 08:32:24','776ee886e4c54b3aa30fc08afef7ce3f','int','c0588314274fa1c901a96221ab938e6e7aa676819e932d99aacc59f482adce19','','','',_binary '\0',_binary '\0'),(10,'usr3&','2022-04-06 08:39:42','de5b7d7a75a4aefa3dff9f129053136b','user@usr.com&','0','','','',_binary '\0',_binary '\0'),(11,'usr4&','2022-04-06 08:55:52','de5b7d7a75a4aefa3dff9f129053136b','user@usr.com&','f9b06fa7566ea563439978c4ccde8cb57e400b209694bf8ecedcf06a849678cb','','','',_binary '\0',_binary '\0'),(12,'usr5&','2022-04-06 09:04:46','de5b7d7a75a4aefa3dff9f129053136b','user@usr.com&','0','','','',_binary '\0',_binary '\0'),(13,'user6','2022-04-06 09:14:13','46f94c8de14fb36680850768ff1b7f2a','user@usr.com','043324aee0f853f34c42d090f345b573c8b281120c8fb037a47351c4ae93f001','','','',_binary '\0',_binary '\0'),(14,'user7','2022-04-06 09:39:53','4297f44b13955235245b2497399d7a93','user@usr.com','06b812915fe68bd9f5a5d424d61a39bbdad4a2d613ce6ca1ae8a020a11657126','','','',_binary '\0',_binary '\0'),(15,'user9','2022-04-06 09:41:22','46f94c8de14fb36680850768ff1b7f2a','user@usr.com','9f0c126610385d84874d31f63f40db64c4c3ef48a69bd1325afa2780c7ffdfb5','','','',_binary '\0',_binary '\0'),(16,'user8','2022-04-06 09:53:10','7e7576bde8baa58874dc2a8a752ee3dc','user@usr.com','2a03f43d585489a1dc216dd78975ceea33fdbb7689221f75cdf29fb6a50cf064','','','',_binary '\0',_binary '\0'),(17,'uint&','2022-04-06 20:11:09','86ef04684938e6bf4252a4fde4de80aa','us','0','','','',_binary '\0',_binary '\0');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -156,4 +161,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-04-30  3:05:02
+-- Dump completed on 2022-05-31 19:40:29

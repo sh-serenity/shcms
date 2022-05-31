@@ -210,7 +210,7 @@ MYSQL *siriinit()
     exit(1);
   }
 
-  mysql_real_connect(con, "mysql", "root", "azwsdcrf321", "gobit", 0,
+  mysql_real_connect(con, "127.0.0.1", "root", "azwsdcrf321", "gobit", 0,
                      NULL, CLIENT_INTERACTIVE);
   mysql_query(con, "SET NAMES utf8 COLLATE utf8_unicode_ci");
   return con;
@@ -1626,7 +1626,7 @@ void addart(FCGX_Request r)
         mysql_real_escape_string(con, end, s2, strlen(s2));
         char *endsubj = malloc(strlen(s4) * 2 + 1);
         mysql_real_escape_string(con, endsubj, s4, strlen(s4));
-
+        if (!topic) topic = "0";
         sprintf(querybig,
                 "INSERT INTO msg (owner, data, parent, subj, topic) VALUES ('%d', "
                 "'%s', '%d', '%s', '%s');",
@@ -1649,7 +1649,7 @@ void addart(FCGX_Request r)
         free(bufp);
         free(end);
         free(endsubj);
-        free(topic);
+//        free(topic);
 
       } // there in post zero.
       FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art", r.out);
