@@ -19,7 +19,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <curl/curl.h>
-
+#include <sys/stat.h>  
+#include <stdbool.h>
 
 typedef unsigned int uint;
 
@@ -283,6 +284,12 @@ char *url_decode(const char *url)
   return dest;
 }
 
+
+bool file_exists (char *filename) {
+  struct stat   buffer;   
+  return (stat (filename, &buffer) == 0);
+}
+
 /*
 char from_hex(char ch) {
   return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
@@ -383,18 +390,21 @@ char *url_decode(const char *str)
 int echofile(char *filename, FCGX_Request request)
 {
   sprintf(left,"/opt/shcms/%s",filename);
-  FILE *f = fopen(left, "rb");
-  fseek(f, 0, SEEK_END);
-  long fsize = ftell(f);
-  fseek(f, 0, SEEK_SET); /* same as rewind(f); */
+  if (file_exists(left))
+  { 
+    FILE *f = fopen(left, "rb");
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET); /* same as rewind(f); */
 
-  char *string = (char *)calloc(fsize + 1, sizeof(char));
-  fread(string, fsize, 1, f);
-  fclose(f);
+    char *string = (char *)calloc(fsize + 1, sizeof(char));
+    fread(string, fsize, 1, f);
+    fclose(f);
 
-  string[fsize] = 0;
-  FCGX_PutS(string, request.out);
-  free(string);
+    string[fsize] = 0;
+    FCGX_PutS(string, request.out);
+    free(string);
+  }
   return 0;
 }
 
