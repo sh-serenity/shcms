@@ -20,10 +20,6 @@ spec:
       containers:
       - name: gobit
         image: stormstack/bshcms:buildnumber
-        lifecycle:
-          postStart:
-            exec:
-              command: ["/bin/sh", "-c", "/usr/bin/init-files.sh"]
         volumeMounts:
           - name: gobit-storage
             mountPath: "/opt"

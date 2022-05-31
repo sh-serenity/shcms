@@ -515,7 +515,7 @@ int reg(FCGX_Request r)
   int val;
   if (!strcmp(FCGX_GetParam("REQUEST_METHOD", r.envp), "POST"))
   {
-    echofile("/shcms/header.tpl", r);
+    echofile("header.tpl", r);
     FCGX_PutS("<div class=sh>", r.out);
     int err;
     err = 0;
@@ -805,7 +805,7 @@ int signin(FCGX_Request r)
       //  FCGX_PutS("Content-type: text/html\r\n", r.out);
     FCGX_PutS("\r\n", r.out);
     FCGX_PutS("\r\n", r.out);
-    // echofile("/shcms/index.html",r.out)
+    // echofile("index.html",r.out)
 
     // FCGX_PutS("Theris not such user.", r.out);
     //  }
@@ -962,14 +962,14 @@ user header(FCGX_Request r)
 
   FCGX_PutS("\r\n", r.out);
   FCGX_PutS("\r\n", r.out);
-  echofile("/shcms/header.tpl", r);
+  echofile("header.tpl", r);
   if (luser.uid)
   {
     sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><a class=sh href=\"/add\">Add</a></div>", luser.name);
     FCGX_PutS(left, r.out);
   }
   else
-    echofile("/shcms/nologinmenu.tpl", r);
+    echofile("nologinmenu.tpl", r);
  
   return luser;
 }
@@ -1186,7 +1186,7 @@ void topic(FCGX_Request r)
   //    fclose(fe);
   // }
 /*
-  echofile("/shcms/footer.tpl", r);
+  echofile("footer.tpl", r);
 }
 */
 //#define HUGEQUERY(id) sprintf(query1,"WITH RECURSIVE msg_path (id,date, data, parent, lvl, path, name, subj) AS ( SELECT id, date, SUBSTRING(data,1,600), parent, 0 lvl, data as path, (select name from users where users.id = msg.owner),subj FROM msg WHERE id = '%s'  UNION ALL SELECT msg.id, msg.date, SUBSTRING(msg.data,1,600), msg.parent, msgp.lvl + 1, concat(msgp.path, \">\", msg.data),(select users.name from users where users.id = msg.owner), msg.subj FROM msg_path AS msgp  JOIN msg AS msg ON msgp.id = msg.parent ) SELECT * FROM msg_path order by path desc, date asc",cid);
@@ -1198,7 +1198,7 @@ void noc(FCGX_Request r)
   if (luser.admin)
   {
 
-      echofile("/shcms/header.tpl", r);
+      echofile("header.tpl", r);
       FCGX_PutS("<p><div class=left><a href=\"/noc=srv\">Servers</a><br>"  , r.out);
       FCGX_PutS("<a href=\"/noc=dns\">DNS</a></br></p></div>", r.out);
       nu = FCGX_GetParam("REQUEST_URI", r.envp);
@@ -1246,7 +1246,7 @@ void noc(FCGX_Request r)
           
         }
         //else justone(30,r);
-      echofile("/shcms/footer.tpl",r);
+      echofile("footer.tpl",r);
     }
   }
 }
@@ -1397,7 +1397,7 @@ void more(FCGX_Request r)
     m[plen] = 0;
     int uid = getsuid(r);
 
-    echofile("/shcms/footer.tpl", r);
+    echofile("footer.tpl", r);
   }
  // free(nu);
 }
@@ -1500,7 +1500,7 @@ void addmsg(FCGX_Request r)
   char *n = strstr(nu, "/addmsg");
   if (n)
   {
-    //  echofile("/shcms/header.tpl", r);
+    //  echofile("header.tpl", r);
     user luser = getuser(r);
     if (luser.uid)
     {
@@ -1584,7 +1584,7 @@ void addart(FCGX_Request r)
 {
   //  send_headers(r);
 //  char *nu = (char *)malloc(32);
-  //  echofile("/shcms/header.tpl", r);
+  //  echofile("header.tpl", r);
   user luser = getuser(r);
   if (luser.uid)
   {
@@ -1876,7 +1876,7 @@ void add(FCGX_Request r)
   FCGX_PutS("\r\n", r.out);
   user luser = getuser(r);
   
-  echofile("/shcms/shead.html", r);
+  echofile("shead.html", r);
   
   
       if (luser.uid)
@@ -1884,7 +1884,7 @@ void add(FCGX_Request r)
         sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><center><a class=sh href=\"/add\">Add</a></div>", luser.name);
         FCGX_PutS(left, r.out);
       
-        echofile("/shcms/new.html", r); 
+        echofile("new.html", r); 
 
           //char *query = (char * )malloc(256);
 
@@ -1927,7 +1927,7 @@ void add(FCGX_Request r)
       
         FCGX_PutS("</form></div>", r.out);
       }
-      echofile("/shcms/footer.tpl",r);
+      echofile("footer.tpl",r);
   }
       
     
@@ -2049,7 +2049,7 @@ void newtopic(FCGX_Request r)
           MYSQL_RES *confres2 = mysql_store_result(con);
           row = mysql_fetch_row(confres2);
           FCGX_PutS(mysql_error(con), r.out);
-          // echofile("/shcms/edit1.html",r);
+          // echofile("edit1.html",r);
           sprintf(left, "<div class=\"sh\"><p>Subject: %s</p>"
                         "Now he is here: %s<br>"
                          "And in what place do you wnt to see it?<br>",row[0],row[2]);
@@ -2075,7 +2075,7 @@ void newtopic(FCGX_Request r)
     
   
 
-  echofile("/shcms/footer.tpl",r);
+  echofile("footer.tpl",r);
  }
 //}
 
@@ -2123,7 +2123,7 @@ void bin(FCGX_Request r)
           //  int uid = atoi(row[0]);
 
           //   FCGX_PutS(row[0], r.out);
-          echofile("/shcms/shead.html", r);
+          echofile("shead.html", r);
           FCGX_PutS("<div class=left>test", r.out);
           char *left = (char *)malloc(256);
           mysql_query(con, "select id, subj from msg;");
@@ -2140,7 +2140,7 @@ void bin(FCGX_Request r)
           MYSQL_RES *confres2 = mysql_store_result(con);
           row = mysql_fetch_row(confres2);
           FCGX_PutS(mysql_error(con), r.out);
-          // echofile("/shcms/edit1.html",r);
+          // echofile("edit1.html",r);
           sprintf(left, "</div><div class=\"sh\">"
                         "<form action=\"/addart\" method=\"post\">"
                         "<p>Name: <input type=\"text\" id=\"subj\" name=\"subj\" value=\"%s\">"
@@ -2150,7 +2150,7 @@ void bin(FCGX_Request r)
           // Here is data going
 
           FCGX_PutS(row[1], r.out);
-          echofile("/shcms/edit2.html", r);
+          echofile("edit2.html", r);
 
           mysql_query(con, "SELECT id, name from topic");
           MYSQL_RES *confres = mysql_store_result(con);
@@ -2164,7 +2164,7 @@ void bin(FCGX_Request r)
             }
         }
         FCGX_PutS("</form>/div></div>", r.out);
-        echofile("/shcms/footer.tpl", r);
+        echofile("footer.tpl", r);
       }
       else
         FCGX_PutS("Database error", r.out);
