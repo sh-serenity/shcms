@@ -1,5 +1,5 @@
 #!/bin/bash
-export DOCKER_HOST="http://hook:2375"
+export DOCKER_HOST="tcp://hook:2375"
 buildnumber=`cat ../buildnumber`
 curl -LO http://dev.shushik.kiev.ua/files/Dockerfile 
 url=`cat ../github`
