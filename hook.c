@@ -143,6 +143,7 @@ int main()
         char *bufp = url_decode(rawbufp);
         bufp[ilen] = 0;
         cJSON *bundle = cJSON_Parse(bufp);
+        if(bundle) {
         cJSON *repo = cJSON_GetObjectItemCaseSensitive(bundle, "repository");
         cJSON *full_name = cJSON_GetObjectItemCaseSensitive(repo,"full_name");
         if(!strcmp(full_name->valuestring,"sh-serenity/shcms"))
@@ -169,6 +170,7 @@ int main()
             free(s);
             free(path);
             free(start);
+        }
         }
         free(bufp);
         free(rawbufp);

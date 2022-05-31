@@ -72,7 +72,7 @@ RUN { \
 
 COPY init-files.sh /usr/bin/init-files.sh
 
-RUN  git clone https://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@github.com/sh-serenity/shcms.git \
+RUN  git clone _GITHUB_ \
      && cd shcms && make all && cp gobit /usr/bin/gobit
 
 CMD ["gobit"]
