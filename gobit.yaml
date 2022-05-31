@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gobit
+  labels:
+    tier: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gobit
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: gobit
+        tier: backend
+    spec:
+      containers:
+      - name: gobit
+        image: stormstack/bshcms:buildnumber
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "/usr/bin/init-files.sh"]
+        volumeMounts:
+          - name: gobit-storage
+            mountPath: "/opt"
+      volumes:
+      - name: gobit-storage
+        persistentVolumeClaim:
+          claimName: gobit-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gobit
+  labels:
+    tier: backend
+spec:
+  selector:
+    app: gobit
+    tier: backend
+  ports:
+  - protocol: TCP
+    port: 9998
