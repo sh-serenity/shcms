@@ -1367,7 +1367,7 @@ void one(long int id, int cutflag, FCGX_Request r)
     //mysql_free_result(confres1);
   }
   //mysql_free_result(confres2);
-  free(cut);
+//  free(cut);
 //  free(more);
 }
 
