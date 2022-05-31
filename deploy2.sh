@@ -7,5 +7,5 @@ curl -LO http://dev.shushik.kiev.ua/init-files.sh
 url=`cat ../github`
 sed -i 's+_GITHUB_+'"$url"'+g' Dockerfile
 docker build . -t stormstack/bshcms:$buildnumber 
-docker --config ../.docker/config.json push stormstack/bshcms:$buildnumber 
+docker --config ../.docker push stormstack/bshcms:$buildnumber 
 docker rmi stormstack/bshcms:$buildnumber
