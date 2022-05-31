@@ -210,7 +210,7 @@ MYSQL *siriinit()
     exit(1);
   }
 
-  mysql_real_connect(con, "127.0.0.1", "root", "azwsdcrf321", "gobit", 0,
+  mysql_real_connect(con, "mysql", "root", "azwsdcrf321", "gobit", 0,
                      NULL, CLIENT_INTERACTIVE);
   mysql_query(con, "SET NAMES utf8 COLLATE utf8_unicode_ci");
   return con;
