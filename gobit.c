@@ -541,7 +541,7 @@ int reg(FCGX_Request r)
     if (!pogin)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -549,7 +549,7 @@ int reg(FCGX_Request r)
     if (!email)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -557,7 +557,7 @@ int reg(FCGX_Request r)
     if (!pass)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -565,7 +565,7 @@ int reg(FCGX_Request r)
     if (!pmore)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -573,7 +573,7 @@ int reg(FCGX_Request r)
     if (!fname)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -581,7 +581,7 @@ int reg(FCGX_Request r)
     if (!sname)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -589,7 +589,7 @@ int reg(FCGX_Request r)
     if (!invite)
     {
       FCGX_PutS("Something is wrong, go back to <a "
-                "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> and "
+                "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> and "
                 "try again.",
                 r.out);
       return 0;
@@ -659,8 +659,8 @@ int reg(FCGX_Request r)
         mysql_query(con, query);
         FCGX_PutS(mysql_error(con), r.out);
         /*FCGX_PutS("User added. Login <a "
-                  "href=\"http://dev.shushik.kiev.ua/"
-                  "login.html\">dev.shushik.kiev.ua"</a>",
+                  "href=\"http://k8s.shushik.kiev.ua/"
+                  "login.html\">k8s.shushik.kiev.ua"</a>",
                   r.out); */
         free(pogin);
         free(email);
@@ -670,7 +670,7 @@ int reg(FCGX_Request r)
       {
         //		send_headers(r);
         FCGX_PutS("Something is wrong, go back to <a "
-                  "href=\"http://dev.shushik.kiev.ua/register.html\">Registration</a> "
+                  "href=\"http://k8s.shushik.kiev.ua/register.html\">Registration</a> "
                   "and try again.",
                   r.out);
         free(pogin);
@@ -726,7 +726,7 @@ void valid(FCGX_Request r)
     FCGX_PutS("\r\n", r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://dev.shushik.kiev.ua/login.html\";</script>",
+                "\"http://k8s.shushik.kiev.ua/login.html\";</script>",
                 r.out);
       
     }
@@ -790,16 +790,16 @@ int signin(FCGX_Request r)
       }
       //  FCGX_PutS("Location: http:/seti/art/",r.out);
       FCGX_PutS(" SameSite=Strict", r.out);
-      FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
+      FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art", r.out);
       FCGX_PutS("\r\n", r.out);
       FCGX_PutS("\r\n", r.out);
-      //    FCGX_PutS("Location: http://dev.shushik.kiev.ua/art",r.out);
+      //    FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art",r.out);
       //         FCGX_PutS("<head><meta http-equiv=\"refresh\"
-      //         content=\"0;URL=\http://dev.shushik.kiev.ua/art\"/></head>
+      //         content=\"0;URL=\http://k8s.shushik.kiev.ua/art\"/></head>
       //         ",r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://dev.shushik.kiev.ua/art\";</script>",
+                "\"http://k8s.shushik.kiev.ua/art\";</script>",
                 r.out);
     } // else {
       //  FCGX_PutS("Content-type: text/html\r\n", r.out);
@@ -989,7 +989,7 @@ void quit(FCGX_Request r)
   }
   FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
             "window.location.href = "
-            "\"http://dev.shushik.kiev.ua/art\";</script>",
+            "\"http://k8s.shushik.kiev.ua/art\";</script>",
             r.out);
 }
 
@@ -1332,7 +1332,7 @@ void one(long int id, int cutflag, FCGX_Request r)
           FCGX_PutS(row1[2], r.out);
           if (cutflag)
           {
-            sprintf(left, "<p><a href=\"http://dev.shushik.kiev.ua/more?%s\">more...</a></p>", row1[0]);
+            sprintf(left, "<p><a href=\"http://k8s.shushik.kiev.ua/more?%s\">more...</a></p>", row1[0]);
             FCGX_PutS(left, r.out);
           }
           sprintf(left,
@@ -1566,10 +1566,10 @@ void addmsg(FCGX_Request r)
         //  free(len);
           free(end);
         } // there in post zero.
-        FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
+        FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art", r.out);
         FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                   "window.location.href = "
-                  "\"http://dev.shushik.kiev.ua/art\";</script>",
+                  "\"http://k8s.shushik.kiev.ua/art\";</script>",
                   r.out);
       }
     }
@@ -1652,10 +1652,10 @@ void addart(FCGX_Request r)
         free(topic);
 
       } // there in post zero.
-      FCGX_PutS("Location: http://dev.shushik.kiev.ua/art", r.out);
+      FCGX_PutS("Location: http://k8s.shushik.kiev.ua/art", r.out);
       FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
                 "window.location.href = "
-                "\"http://dev.shushik.kiev.ua/art\";</script>",
+                "\"http://k8s.shushik.kiev.ua/art\";</script>",
                 r.out);
 
 //      free(len);
@@ -1845,7 +1845,7 @@ void image(FCGX_Request r)
       //   FCGX_PutS(len,r.out);
       char *st = malloc(100);
       //  FCGX_PutS("Content-type: text/html\r\n\r\n",r.out);
-      sprintf(st, "dev.shushik.kiev.ua/%s\r\n", fname);
+      sprintf(st, "k8s.shushik.kiev.ua/%s\r\n", fname);
       printf(st);
       FCGX_PutS(st, r.out);
       //  FCGX_PutS(filename,r.out);
@@ -2031,7 +2031,7 @@ void newtopic(FCGX_Request r)
           
           while (row = mysql_fetch_row(confres1))
           {
-              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/menu%s\">%s</a> <br>",row[0],row[1]);
+              sprintf(left, "<a href=\"http://k8s.shushik.kiev.ua/menu%s\">%s</a> <br>",row[0],row[1]);
               FCGX_PutS(left,r.out);
           }
           FCGX_PutS(mysql_error(con), r.out);
@@ -2041,7 +2041,7 @@ void newtopic(FCGX_Request r)
         /*  if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"http://k8s.shushik.kiev.ua/menu%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           */  
@@ -2133,7 +2133,7 @@ void bin(FCGX_Request r)
           if (confres1)
             while (row = mysql_fetch_row(confres1))
             {
-              sprintf(left, "<a href=\"http://dev.shushik.kiev.ua/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
+              sprintf(left, "<a href=\"http://k8s.shushik.kiev.ua/bin%s\"> %s %s<a> <br>", row[0], row[2], row[1]);
               FCGX_PutS(left, r.out);
             }
           mysql_query(con, query);
@@ -2173,7 +2173,7 @@ void bin(FCGX_Request r)
       FCGX_PutS("Database error", r.out);
   }
 }
-#define FROM_MAIL "noreply@dev.shushik.kiev.ua"
+#define FROM_MAIL "noreply@k8s.shushik.kiev.ua"
 
 
 char *pay_txt(){
@@ -2182,12 +2182,12 @@ char *pay_txt(){
   char *payload_text = malloc(1024);
   sprintf(payload_text,"From: <%s>\r\n"
     "To: <%s>\r\n"
-    "Subject: validate you email at dev.shushik.kiev.uar\n"
+    "Subject: validate you email at k8s.shushik.kiev.uar\n"
     "MIME-Version: 1.0"
     "Content-Type: multipart/alternative; boundary=\"outer-boundary\""
     "\r\n"
       "\r\n"
-      "Validate your email by going to this http://dev.shushik.kiev.ua/valid=%s \r\n"
+      "Validate your email by going to this http://k8s.shushik.kiev.ua/valid=%s \r\n"
     "\r\n"
     ".\r\n", FROM_MAIL, mailto, payload, payload);
     
