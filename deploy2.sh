@@ -1,4 +1,5 @@
 #!/bin/bash
+
 export DOCKER_HOST="tcp://localhost:2375"
 buildnumber=`cat ../buildnumber`
 curl -LO http://dev.shushik.kiev.ua/files/Dockerfile 
