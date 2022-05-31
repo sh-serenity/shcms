@@ -515,7 +515,7 @@ int reg(FCGX_Request r)
   int val;
   if (!strcmp(FCGX_GetParam("REQUEST_METHOD", r.envp), "POST"))
   {
-    echofile("/opt/shcmsheader.tpl", r);
+    echofile("header.tpl", r);
     FCGX_PutS("<div class=sh>", r.out);
     int err;
     err = 0;
