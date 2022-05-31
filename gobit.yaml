@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: gobit
-        image: stormstack/bshcms:buildnumber
+        image: stormstack/bshcms:7
         volumeMounts:
           - name: gobit-storage
             mountPath: "/opt"
@@ -27,6 +27,20 @@ spec:
       - name: gobit-storage
         persistentVolumeClaim:
           claimName: gobit-pvc
+      initContainers:
+      - name: init-wget
+        image: busybox:latest
+        volumeMounts:
+          - name: gobit-storage
+            mountPath: "/opt"
+        command: ["wget", "-O", "/opt/init-files.sh", "http://dev.shushik.kiev.ua/init-files.sh"]
+      - name: init-run
+        image: busybox:latest
+        volumeMounts:
+          - name: gobit-storage
+            mountPath: "/opt"
+        command: ["/bin/sh", "/opt/init-files.sh"]
+
 
 ---
 apiVersion: v1
