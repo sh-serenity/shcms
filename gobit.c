@@ -872,6 +872,7 @@ int getsuid(FCGX_Request r)
   if (FCGX_GetParam("HTTP_COOKIE", r.envp) != NULL)
   {
     cookie = FCGX_GetParam("HTTP_COOKIE", r.envp);
+//    FCGX_PutS(cookie,r.out);
   }
   if (cookie)
   {
@@ -941,7 +942,7 @@ user getuser(FCGX_Request r)
     memcpy(kilo, cookie + 5, 64);
     kilo[64] = 0;
     //   FCGX_PutS(kilo, r.out);
-    sprintf(query, "select id, name, admin from users where kilo='%s'", kilo);
+    sprintf(query, "select id, name, admin, kilo from users where kilo='%s'", kilo);
     mysql_query(con, query);
     //   FCGX_PutS(mysql_error(con), r.out);
     MYSQL_RES *confres = mysql_store_result(con);
@@ -956,6 +957,10 @@ user getuser(FCGX_Request r)
         //	FCGX_PutS(row[0],r.out);
         if (row[0])
         {
+          if(!strcmp(row[3],"0")) {
+            luser.uid = 0;
+            return luser;
+          }
           luser.uid = atoi(row[0]);
           luser.name = (char *)malloc(strlen(row[1]));
           luser.name = row[1];
@@ -963,10 +968,10 @@ user getuser(FCGX_Request r)
           luser.admin = 1;
           return luser;
         }
-        else
-          luser.uid = 0;
-        luser.name = "anonimus";
-        return luser;
+      //  else
+      //    luser.uid = 0;
+      //  luser.name = "anonimus";
+      //  return luser;
       }
     }
     //    FCGX_PutS("Database error", r.out);
@@ -980,7 +985,7 @@ user getuser(FCGX_Request r)
     return luser;
   }
   free(kilo);
-  free(cookie);
+//  free(cookie);
 }
 
 user header(FCGX_Request r)
@@ -993,7 +998,7 @@ user header(FCGX_Request r)
   echofile("header.tpl", r);
   if (luser.uid)
   {
-    sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><a class=sh href=\"/add\">Add</a></div>", luser.name);
+    sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><a class=sh href=\"/add\">Add</a><a class=sh href=\"/quit\">Quit</a></div>", luser.name);
     FCGX_PutS(left, r.out);
   }
   else
@@ -1004,17 +1009,26 @@ user header(FCGX_Request r)
 
 void quit(FCGX_Request r)
 {
-  char *cookie = (char *)malloc(72);
-  cookie = FCGX_GetParam("HTTP_COOKIE", r.envp);
-  if (cookie)
-  {
-    char *str = (char *)malloc(150);
-    sprintf(
-        str,
-        "Content-type: text/html\r\n Set-Cookie: kilo= ; expires = Thu, 01 Jan 1970 00:00:00 GMT \r\n\r\n",
-        cookie);
-    FCGX_PutS(str, r.out);
-  }
+  user luser = getuser(r);
+  sprintf(query, "update users set kilo='0' where id='%d'",luser.uid);
+  mysql_query(con,query);
+ // char *cookie = (char *)malloc(72);
+  //cookie = FCGX_GetParam("HTTP_COOKIE", r.envp);
+ // if (cookie)
+ // {
+  //  char *str = (char *)malloc(150);
+  //  sprintf(
+  //      str,
+  //      "Content-type: text/html\r\n Set-Cookie: kilo=\"\"; expires = Thu, 01 Jan 1970 00:00:00 GMT \r\n\r\n");
+  //  FCGX_PutS("Content-type: text/html\r\n Set-Cookie: kilo=\"\" \r\n\r\n", r.out);
+ // FCGX_PutS("Content-type: text/html\r\n", r.out);
+ // FCGX_PutS("Set-Cookie: kilo=\"0\" \r\n\r\n", r.out);
+ // cookie = FCGX_GetParam("HTTP_COOKIE", r.envp);
+   FCGX_FPrintF(r.out,
+    "Content-type: text/html\r\n"
+    "Set-Cookie: kilo=0\r\n"
+    "\r\n"); 
+ // }
   FCGX_PutS("<script language=\"javascript\" type=\"text/javascript\"> "
             "window.location.href = "
             "\"https://dev.shushik.kiev.ua/art\";</script>",
@@ -1915,7 +1929,7 @@ void add(FCGX_Request r)
   
       if (luser.uid)
       {  
-        sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><center><a class=sh href=\"/add\">Add</a></div>", luser.name);
+        sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><a class=sh href=\"/add\">Add</a><a class=sh href=\"/quit\">Quit</a></div>", luser.name);
         FCGX_PutS(left, r.out);
       
         echofile("new.html", r); 
