@@ -41,7 +41,7 @@ div.hello	{
     overflow: hidden; 
     top: 0px;
     width: max-content;;   
-    max-width: 70%;
+    max-width: 98%;
     background-color: #6d9720; 
     float: right;    
     
@@ -86,12 +86,16 @@ a.sh {
     background: #fc3;
 }
 .com {
-    position: relative;
-    background-color: #948f8f;
-    left: 256px;
+    background-color: #a19d9d;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
     font-size: 14px;
-    border: 0px;
+    border: 4px;
     border-radius: 6px;
+    padding: 8px 32px 8px 32px;
+    align: center;
+    border: 2px solid #000000;
 }
 
 div.left {
@@ -104,7 +108,7 @@ div.left {
     overflow-x: hidden; /* Disable horizontal scroll */
     padding-top: 20px;
     
-}
+}go
 .left a { color: black }
 
 

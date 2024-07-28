@@ -3,7 +3,7 @@
 <html lang="ru-RU">
 <head>
 <meta charset="utf-8">
-<title>k8s.shushik.kiev.ua</title>
+<title>dev.shushik.kiev.ua</title>
     <meta http-equiv="Content-Type" content="text/html"; charset=utf-8">
     <link rel="stylesheet" href="/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -31,4 +31,5 @@ location.reload();
 </script>
 </head>
 <body>
-<div class=logo><h1>Бесконечность не предел.....</h1></div>
+<div class=logo><h1>Thanks to Brian W. Kernighan, Dennis M. Ritchie.....</h1></div>
+<div class="sh"><center><img src="pdn.png"></center></div>

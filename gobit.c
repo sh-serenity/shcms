@@ -1,5 +1,4 @@
 #define __USE_MISC
-
 #include "fcgi_config.h"
 #include "fcgiapp.h"
 #include "sodium.h"
@@ -389,7 +388,7 @@ char *url_decode(const char *str)
 */
 int echofile(char *filename, FCGX_Request request)
 {
-  sprintf(left,"/opt/shcms/%s",filename);
+  sprintf(left,"/home/int/first/%s",filename);
   if (file_exists(left))
   { 
     FILE *f = fopen(left, "rb");
@@ -520,7 +519,6 @@ int reg(FCGX_Request r)
   payload = malloc(65);
   FCGX_PutS("Content-type: text/html\r\n", r.out);
   FCGX_PutS("\r\n", r.out);
-
   regex_t ex;
   int val;
   if (!strcmp(FCGX_GetParam("REQUEST_METHOD", r.envp), "POST"))
@@ -607,89 +605,101 @@ int reg(FCGX_Request r)
     
     
     val = regcomp(&ex, "[A-Za-z0-9;()-_;:.@А-Яа-я]", 0);
-    sprintf(query, "select * from users where name='%s'", pogin);
+  
     // FCGX_PutS(query,r.out);
     int res;
-    mysql_query(con, query);
-    MYSQL_RES *confres = mysql_store_result(con);
-    int totalrows = mysql_num_rows(confres);
+    
     char s[10];
-    if (totalrows == 0)
+  
+    sprintf(query, "select * from users where name='%s'", pogin);
+      mysql_query(con, query);
+      MYSQL_RES *confres = mysql_store_result(con);
+      int totalrows = mysql_num_rows(confres);
+      if (totalrows != 0 ) {err=1; FCGX_PutS("This name is taken<br>", r.out); }  
     {
-      res = regexec(&ex, pogin, 0, NULL, 0);
-      if (!res)
-      {
-        FCGX_PutS("nicname is ok<br>", r.out);
-      }
-      else
-      {
-        FCGX_PutS("nicname contibs not usable characters <br>", r.out);
-        err = 1;
-      }
-      res = regexec(&ex, pass, 0, NULL, 0);
-      if (!res)
-      {
-        FCGX_PutS("pass ok <br>", r.out);
-      }
-      else
-      {
-        FCGX_PutS("Error in pass<br>", r.out);
-        err = 1;
-      }
-      if (!strcmp(pass, pmore))
-      {
-        FCGX_PutS("pass and once more pass the same <br>", r.out);
-      }
-      else
-      {
-        FCGX_PutS("pass and once more again password not the same <br>", r.out);
-        err = 1;
-      }
       
-      //val = regcomp(&ex, "^([a-z0-9])(([-a-z0-9._])*([a-z0-9]))*@([a-z0-9])(([a-z0-9-])*([a-z0-9]))+(.([a-z0-9])([-a-z0-9_-])?", 0);
-      res = regexec(&ex, email, 0, NULL, 0);
-      if (!res)
-      {
-        FCGX_PutS("email is ok <br>", r.out);
+      sprintf(query, "select * from users where email='%s'", email);
+      mysql_query(con, query);
+      MYSQL_RES *confres = mysql_store_result(con);
+      totalrows = mysql_num_rows(confres);
+      char s[10];
+      if (totalrows != 0 ) {err=3;}
+        {
+        res = regexec(&ex, pogin, 0, NULL, 0);
+        if (!res)
+        {
+          FCGX_PutS("nicname is ok<br>", r.out);
+        }
+        else
+        {
+          FCGX_PutS("nicname contibs not usable characters <br>", r.out);
+          err = 1;
+        }
+        res = regexec(&ex, pass, 0, NULL, 0);
+        if (!res)
+        {
+          FCGX_PutS("pass ok <br>", r.out);
+        }
+        else
+        {
+          FCGX_PutS("Error in pass<br>", r.out);
+          err = 1;
+        }
+        if (!strcmp(pass, pmore))
+        {
+          FCGX_PutS("pass and once more pass the same <br>", r.out);
+        }
+        else
+        {
+          FCGX_PutS("pass and once more again password not the same <br>", r.out);
+          err = 1;
+        }
+        
+        //val = regcomp(&ex, "^([a-z0-9])(([-a-z0-9._])*([a-z0-9]))*@([a-z0-9])(([a-z0-9-])*([a-z0-9]))+(.([a-z0-9])([-a-z0-9_-])?", 0);
+        res = regexec(&ex, email, 0, NULL, 0);
+        if (!res)
+        {
+          FCGX_PutS("email is ok <br>", r.out);
+        }
+        else
+        {
+          FCGX_PutS("this is not email<br>", r.out);
+          err = 1;
+        } 
+        if (strcmp(invite,"bbs"))
+        {
+          err = 1;
+          FCGX_PutS("invite is wrong<br>", r.out);
+        }
+        if (strlen(fname) < 1)
+        {
+          FCGX_PutS("First name is wrong<br>", r.out);
+          err = 1;
+        }
+        if (strlen(sname) < 1)
+        {
+          FCGX_PutS("Second name is wrong<br>", r.out);
+          err = 1;
+        }
+        if (strlen(pass) < 4)
+        {
+          FCGX_PutS("Pass is wrong<br>", r.out);
+          err = 1; 
+        }
+        //if (err==2) FCGX_PutS("This name is taken<br>", r.out);
+        if (err==3) FCGX_PutS("This email is taken<br>", r.out);
       }
-      else
-      {
-        FCGX_PutS("this is not email<br>", r.out);
-        err = 1;
-      } 
-      if (strcmp(invite,"zombie"))
-      {
-        err = 1;
-        FCGX_PutS("invite is wrong<br>", r.out);
-       }
-      if (strlen(fname) < 1)
-      {
-        FCGX_PutS("First name is wrong<br>", r.out);
-        err = 1;
-      }
-      if (strlen(sname) < 1)
-      {
-        FCGX_PutS("Second name is wrong<br>", r.out);
-        err = 1;
-      }
-      if (strlen(pass) < 4)
-      {
-        FCGX_PutS("Pass is wrong<br>", r.out);
-        err = 1;
-      }
-
       if (err == 0)
       {
        // char *payload = malloc(65);
         payload = ssha(foo());
-        send_payload(email, payload);
+//        send_payload(email, payload);
         sprintf(query,
                 "insert into users (name, pass, email,fname,sname,payload,checked) values('%s',md5('%s'),'%s','%s','%s','%s',0)",pogin, pass, email, fname, sname, payload);
         mysql_query(con, query);
         valid(r);
         FCGX_PutS(mysql_error(con), r.out);
-        FCGX_PutS("User added. Check you mailbox for validation. And spam folder too.</a>",
-                  r.out);
+        FCGX_PutS("User added. <a href=\"https://dev.shushik.kiev.ua/login.html\">Go ahead!</a>:",r.out);
         free(pogin);
         free(email);
         free(pass);
@@ -708,21 +718,12 @@ int reg(FCGX_Request r)
         free(bufp);
         regfree(&ex);
       }
-    }
-    else
-    {
-      //	    send_headers(r);
-      FCGX_PutS("This name is taken", r.out);
-      free(pogin);
-      free(email);
-      free(pass);
-      free(pmore);
-      free(bufp);
-      regfree(&ex);
+    } 
+    
     }
     FCGX_PutS("</div>", r.out);
   }
-}
+
 
 
 void valid(FCGX_Request r)
@@ -787,7 +788,7 @@ int signin(FCGX_Request r)
     char *pass = parse_post(bufp, "pass=", 32);
     
     sprintf(query,
-            "select id, kilo from users where name='%s' and pass=md5('%s') and checked=1",
+            "select id, kilo from users where name='%s' and pass=md5('%s')",
             pogin, pass);
     mysql_query(con, query);
 
@@ -833,9 +834,9 @@ int signin(FCGX_Request r)
       //  FCGX_PutS("Content-type: text/html\r\n", r.out);
     FCGX_PutS("\r\n", r.out);
     FCGX_PutS("\r\n", r.out);
-    // echofile("index.html",r.out)
+   // echofile("index.html",r.out)
 
-    // FCGX_PutS("Theris not such user.", r.out);
+     FCGX_PutS("Theris not such user.", r.out);
     //  }
 //  free(len);
   free(bufp);
@@ -955,12 +956,12 @@ user getuser(FCGX_Request r)
         row = mysql_fetch_row(confres);
         //    mysql_free_result(confres);
         //	FCGX_PutS(row[0],r.out);
-        if (row[0])
-        {
-          if(!strcmp(row[3],"0")) {
-            luser.uid = 0;
-            return luser;
-          }
+     //   if (row[0])
+     //   {
+     //     if(!strcmp(row[3],"0")) {
+     //       luser.uid = 0;
+     //       return luser;
+     //     }
           luser.uid = atoi(row[0]);
           luser.name = (char *)malloc(strlen(row[1]));
           luser.name = row[1];
@@ -978,16 +979,7 @@ user getuser(FCGX_Request r)
     //     free(query);
     //     mysql_free_result(confres);
   }
-  else
-  {
-    luser.uid = 0;
-    luser.name = "anonimus";
-    return luser;
-  }
-  free(kilo);
-//  free(cookie);
-}
-
+  
 user header(FCGX_Request r)
 {
   user luser = getuser(r);
@@ -998,7 +990,7 @@ user header(FCGX_Request r)
   echofile("header.tpl", r);
   if (luser.uid)
   {
-    sprintf(left, "<div class=hello><p>Welcome,%s!</p></div><div class=menu><a class=sh href=\"/add\">Add</a><a class=sh href=\"/quit\">Quit</a></div>", luser.name);
+    sprintf(left, "<div class=hello><p>Welcome!</p></div><div class=menu><a class=sh href=\"/add\">Add</a><a class=sh href=\"/quit\">Quit</a></div>");
     FCGX_PutS(left, r.out);
   }
   else
@@ -1359,11 +1351,10 @@ void one(long int id, int cutflag, FCGX_Request r)
         {
 
           int lvl = atoi(row1[4]);
-          int n = 30 + 2 * lvl;
-          int m = 70;
-          FCGX_PutS("<div class=sh>", r.out);
-          sprintf(left, "<div class=com style=\"left: %d\%; width: %d\%;\">",
-                  n - 3, m);
+   //       int n = 30 + 2 * lvl;
+   //       int m = 70;
+          //FCGX_PutS("<div class=com>", r.out);
+          sprintf(left, "<div class=com>");
           FCGX_PutS(left, r.out);
           if (row1[7])
           {
@@ -1624,7 +1615,7 @@ void addmsg(FCGX_Request r)
     else
       FCGX_PutS("You are not registerd", r.out);
   }
-  free(n);
+// free(n);
  // free(nu);
 }
 
@@ -2230,7 +2221,7 @@ char *pay_txt(){
   char *payload_text = malloc(1024);
   sprintf(payload_text,"From: <%s>\r\n"
     "To: <%s>\r\n"
-    "Subject: validate you email at dev.shushik.kiev.uar\n"
+    "Subject: validate you email at dev.shushik.kiev.ua\n"
  //   "MIME-Version: 1.0"
  //   "Content-Type: multipart/alternative; boundary=\"outer-boundary\""
     "\r\n"
@@ -2301,14 +2292,14 @@ int sendpay(char *mailto)
   curl = curl_easy_init();
   if(curl) {
     /* Set username and password */
-    curl_easy_setopt(curl, CURLOPT_USERNAME, "noreplay@shushik.kiev.ua");
+    curl_easy_setopt(curl, CURLOPT_USERNAME, "noreplay@dev.shushik.kiev.ua");
     curl_easy_setopt(curl, CURLOPT_PASSWORD, "azwsdcrf321");
  
     /* This is the URL for your mailserver. Note the use of port 587 here,
      * instead of the normal SMTP port (25). Port 587 is commonly used for
      * secure mail submission (see RFC4403), but you should use whatever
      * matches your server configuration. */
-    curl_easy_setopt(curl, CURLOPT_URL, "smtp://soap.shushik.kiev.ua:587");
+    curl_easy_setopt(curl, CURLOPT_URL, "smtp://soap.shushik.kiev.ua:25");
  
     /* In this example, we will start with a plain text connection, and upgrade
      * to Transport Layer Security (TLS) using the STARTTLS command. Be careful
