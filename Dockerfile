@@ -1,3 +1,10 @@
+
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "apply-templates.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
 FROM debian:buster-slim
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
@@ -7,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg dirmngr &
 
 # add gosu for easy step-down from root
 # https://github.com/tianon/gosu/releases
-ENV GOSU_VERSION 1.14
+ENV GOSU_VERSION=1.14
 RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
     apt-get update; \
@@ -45,9 +52,13 @@ RUN set -eux; \
     ; \
     rm -rf /var/lib/apt/lists/*
 
+
 RUN set -eux; \
-# gpg: key 3A79BD29: public key "MySQL Release Engineering <mysql-build@oss.oracle.com>" imported
-    key='859BE8D7C586F538430B19C2467B942D3A79BD29'; \
+# pub   rsa4096 2023-10-23 [SC] [expires: 2025-10-22]
+#       BCA4 3417 C3B4 85DD 128E  C6D4 B7B3 B788 A8D3 785C
+# uid           [ unknown] MySQL Release Engineering <mysql-build@oss.oracle.com>
+# sub   rsa4096 2023-10-23 [E] [expires: 2025-10-22]
+    key='BCA4 3417 C3B4 85DD 128E C6D4 B7B3 B788 A8D3 785C'; \
     export GNUPGHOME="$(mktemp -d)"; \
     gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"; \
     mkdir -p /etc/apt/keyrings; \
@@ -55,24 +66,18 @@ RUN set -eux; \
     gpgconf --kill all; \
     rm -rf "$GNUPGHOME"
 
-ENV MYSQL_MAJOR 8.0
-ENV MYSQL_VERSION 8.0.28-1debian10
-
 RUN echo 'deb [ signed-by=/etc/apt/keyrings/mysql.gpg ] http://repo.mysql.com/apt/debian/ buster mysql-8.0' > /etc/apt/sources.list.d/mysql.list
 
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
-RUN { \
-	echo mysql-community-server mysql-community-server/data-dir select ''; \
-    } | debconf-set-selections \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y \
 	mysql-community-client \
-    &&  apt-get -y install make clang libfcgi-dev libsodium-dev libssl-dev libmysqlclient-dev libtidy-dev libcurl4-openssl-dev git inetutils-ping
+    &&  apt-get -y install make gcc libfcgi-dev libsodium-dev libssl-dev libmysqlclient-dev libtidy-dev libcurl4-openssl-dev git inetutils-ping
 
 COPY init-files.sh /usr/bin/init-files.sh
 
-RUN  git clone _GITHUB_ \
+RUN  git clone https://github.com/sh-serenity/shcms \
      && cd shcms && make all && cp gobit /usr/bin/gobit
 
 CMD ["gobit"]
