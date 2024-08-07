@@ -388,7 +388,7 @@ char *url_decode(const char *str)
 */
 int echofile(char *filename, FCGX_Request request)
 {
-  sprintf(left,"/home/int/first/%s",filename);
+  sprintf(left,"/opt/shcms/%s",filename);
   if (file_exists(left))
   { 
     FILE *f = fopen(left, "rb");
